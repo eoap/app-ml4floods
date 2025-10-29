@@ -42,7 +42,8 @@ jobs:
     - run: |
         transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
         mv cwl-workflow/codemeta.json codemeta.json
-    - run: echo "APP_VERSION=$(cat codemeta.json | jq -r .version )" >> $GITHUB_ENV
+    #- run: echo "APP_VERSION=$(cat codemeta.json | jq -r .version )" >> $GITHUB_ENV
+    - run: echo "APP_VERSION=0.1.0" >> $GITHUB_ENV
     - run: echo app version is $APP_VERSION
     - id: set-version
       run: echo "::set-output name=version::$APP_VERSION"
@@ -128,14 +129,10 @@ jobs:
     - uses: actions/checkout@v2
     - run: |
         set -x
-        tag="ghcr.io/eoap/app-ml4floods/${{matrix.step}}:${{needs.version.outputs.app-version}}"
+        tag="ghcr.io/eoap/${{matrix.step}}:${{needs.version.outputs.app-version}}"
         docker pull ${tag}
         shatag=$( docker inspect ${tag} | yq -r '.[0]["RepoDigests"][0]' )
-        s="clt" t="${shatag}" yq -i eval '(.$graph[] | select (.id == env(s)) ).requirements.DockerRequirement.dockerPull = env(t)' cwl-workflow/${{matrix.step}}.cwl
-    - run: |
-        set -x
-        #r=$( cat codemeta.json | jq -r ".codeRepository" ) yq -i eval '."s:codeRepository" = {"URL" : env(r)}' cwl-workflow/${{matrix.step}}.cwl
-        #v="${{needs.version.outputs.app-version}}" yq -i eval '."s:softwareVersion" = env(v)' cwl-workflow/${{matrix.step}}.cwl
+        s="ml4floods-cli" t="${shatag}" yq -i eval '(.$graph[] | select (.id == env(s)) ).requirements.DockerRequirement.dockerPull = env(t)' cwl-workflow/${{matrix.step}}.cwl
     - name: Cleanup downloads folder
       run: rm -rf downloads/*
     - run: |
@@ -147,7 +144,8 @@ jobs:
         name: application-package-${{matrix.step}}
         path: downloads
         overwrite: true
-    - name: upload linux artifact 1
+    
+    - name: upload application package to release
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -156,7 +154,17 @@ jobs:
         asset_path: downloads/${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
         asset_name: ${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
         asset_content_type: text/yaml
-    
+
+    - name: upload codemeta to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: codemeta.json
+        asset_name: codemeta.json
+        asset_content_type: text/json
+
     - name: Setup ORAS CLI
       uses: oras-project/setup-oras@v1
     
