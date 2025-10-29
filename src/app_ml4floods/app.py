@@ -120,7 +120,7 @@ def main(input_item, water_threshold, brightness_threshold):
     logger.info(
         f"Using channels: {channels} for inference {list(range(len(channels)))}"
     )
-    logger.info(f"srcs: {srcs}")
+
     tqdm_loop = tqdm(
         referenced_src.block_windows(1),
         total=sum(1 for _ in referenced_src.block_windows(1)),

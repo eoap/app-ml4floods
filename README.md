@@ -21,6 +21,11 @@ ml4floods-cli  --input-item https://planetarycomputer.microsoft.com/api/stac/v1/
 ml4floods-cli  --input-item https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241031T105109_R051_T31SBD_20241031T133016
 ```
 
+```
+docker build -t ml4floods-cli .
+cwltool cwl-workflow/app-ml4floods.cwl#ml4floods --input-item https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241031T105109_R051_T31SBD_20241031T133016
+```
+
 ## Notes
 
 Landsat is not yet supported

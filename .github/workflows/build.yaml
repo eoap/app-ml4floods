@@ -35,6 +35,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - run: pip install transpiler-mate
+    - run: transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
     - run: echo "APP_VERSION=$(cat codemeta.json | jq -r .version )" >> $GITHUB_ENV
     - run: echo app version is $APP_VERSION
     - id: set-version
@@ -52,11 +57,8 @@ jobs:
         python-version: 3.x
     - run: |
         pip install .
-        cd runner
-        pip install .
         pip install nose2
     - run: |
-        cd runner
         nose2
 
   container-build:
