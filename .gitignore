@@ -1,0 +1,7 @@
+*.tif
+catalog.json
+S2*
+LC0*
+t.ipynb
+__pycache__
+.cache

@@ -1,0 +1,80 @@
+{
+    "experiment_name": "WF2_unetv2_rgbi_00",
+    "seed": 5881,
+    "model_params": {
+        "model_folder": "/home/kike/Projects/ml4floods/auxiliar_work/Experiments/",
+        "model_version": "v2",
+        "hyperparameters": {
+            "max_tile_size": 512,
+            "metric_monitor": "val_bce_land_water",
+            "channel_configuration": "bgri",
+            "weight_problem": [
+                0.2,
+                0.8
+            ],
+            "pos_weight": [
+                1.0,
+                6.0
+            ],
+            "label_names": [
+                [
+                    "invalid",
+                    "clear",
+                    "cloud"
+                ],
+                [
+                    "invalid",
+                    "land",
+                    "water"
+                ]
+            ],
+            "model_type": "unet",
+            "num_classes": 2,
+            "max_epochs": 30,
+            "val_every": 1,
+            "lr": 0.0001,
+            "lr_decay": 0.5,
+            "lr_patience": 2,
+            "early_stopping_patience": 5,
+            "num_channels": 4
+        },
+        "train": true,
+        "test": false
+    },
+    "data_params": {
+        "loader_type": "local",
+        "num_workers": 16,
+        "filter_windows": {
+            "version": "v2",
+            "threshold_clouds": 0.8,
+            "apply": true
+        },
+        "download": {
+            "train": false,
+            "val": false,
+            "test": false
+        },
+        "bucket_id": "",
+        "path_to_splits": "/media/disk/databases/WORLDFLOODS/2_Mart/worldfloods_extra_v2_0_DEF",
+        "train_test_split_file": "/home/kike/Projects/ml4floods/auxiliar_work/Experiments/splits/split_clean.json",
+        "input_folder": "S2",
+        "target_folder": "gt",
+        "batch_size": 128,
+        "window_size": [
+            256,
+            256
+        ],
+        "channel_configuration": "bgri",
+        "add_mndwi_input": false,
+        "train_transformation": {
+            "normalize": true
+        },
+        "test_transformation": {
+            "normalize": true
+        }
+    },
+    "resume_from_checkpoint": false,
+    "gpus": 1,
+    "wandb_entity": "ml4floods",
+    "wandb_project": "wf_improvements"
+}

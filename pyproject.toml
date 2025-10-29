@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "app-ml4floods"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Fabrice Brito", email = "fabrice.brito@terradue.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "ml4floods",
+  "rasterio",
+  "pyproj",
+  "pystac",
+  "click",
+  "requests",
+  "rio_stac",
+  "loguru",
+  "pystac_client",
+  "typing",
+  "scikit-image",
+  "planetary-computer",
+]
+
+[project.urls]
+Documentation = "https://github.com/eoap/app-ml4floods#readme"
+Issues = "https://github.com/eoap/app-ml4floods/issues"
+Source = "https://github.com/eoap/app-ml4floods"
+
+[tool.hatch.envs.prod]
+path = "/app/envs/app-ml4floods"
+
+[project.scripts]
+ml4floods-cli = "app_ml4floods.app:main"
+
+[tool.hatch.version]
+path = "src/app_ml4floods/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/app_ml4floods tests}"
+
+[tool.coverage.run]
+source_pkgs = ["app_ml4floods", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/app_ml4floods/__about__.py",
+]
+
+[tool.coverage.paths]
+app_ml4floods = ["src/app_ml4floods", "*/app-ml4floods/src/app_ml4floods"]
+tests = ["tests", "*/app-ml4floods/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
