@@ -81,8 +81,8 @@ jobs:
     - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     - name: build & push image
       run: |
-        IMAGE_ID=ghcr.io/eoap/app-ml4floods/${{ matrix.step }}
-        docker build ${{ matrix.step }} --file ${{ matrix.step }}/Dockerfile --tag ${{ matrix.step }}
+        IMAGE_ID=ghcr.io/eoap/${{ matrix.step }}
+        docker build ${{ matrix.step }} --file Dockerfile --tag ${{ matrix.step }}
         docker tag ${{ matrix.step }} $IMAGE_ID:${{needs.version.outputs.app-version}}
         docker push $IMAGE_ID:${{needs.version.outputs.app-version}}
 
