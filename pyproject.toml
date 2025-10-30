@@ -27,13 +27,11 @@ classifiers = [
 dependencies = [
   "ml4floods",
   "rasterio",
-  "pyproj",
   "pystac",
   "click",
   "requests",
   "rio_stac",
   "loguru",
-  "pystac_client",
   "typing",
   "scikit-image",
   "planetary-computer",

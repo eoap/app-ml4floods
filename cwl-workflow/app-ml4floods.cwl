@@ -141,7 +141,7 @@ $graph:
   
   hints:
     DockerRequirement:
-      dockerPull: docker.io/library/ml4floods:latest
+      dockerPull: docker.io/library/ml4floods-cli:latest
           
   baseCommand: ["ml4floods-cli"]
   inputs:

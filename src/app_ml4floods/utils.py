@@ -15,10 +15,8 @@ from typing import Dict, List
 import planetary_computer as pc
 
 
-from ml4floods.models.model_setup import get_channel_configuration_bands
 
-
-def get_asset(item, common_name):
+def get_asset(item, common_name) -> pystac.Asset | None:
     """Returns the asset of a STAC Item defined with its common band name"""
     for key, asset in item.get_assets().items():
         if not "data" in asset.to_dict()["roles"]:
@@ -63,22 +61,12 @@ def item_filter_assets(item: pystac.Item) -> pystac.Item:
     for key in common_names:
         new_item.add_asset(key=key, asset=get_asset(item, key))
 
-    # desirable_keys = []
-    # for common_name in common_names:
-    #     desirable_keys.append(get_asset(item, common_name))
-
-    # assert len(desirable_keys) > 0, "Item has no desirable asset"
-
-    # # Delete the assets that are not in the assets_to_keep list
-    # for key, asset in item.get_assets().items():
-    #     if key in desirable_keys:
-    #         new_item.add_asset(key, asset)
-
     return new_item, common_names
 
 
-def resize_and_convert_to_cog(asset: pystac.Asset, target_resolution=10):
-    output_file = f'./{asset.get_absolute_href().split("/")[-1]}'
+def resize_and_convert_to_cog(asset: pystac.Asset, target_resolution=10) -> str:
+
+    logger.info(f"Resizing and converting asset {asset.get_absolute_href()} to COG format...")
 
     eo_asset = pystac.extensions.eo.AssetEOExtension(asset)
     common_band_name = eo_asset.bands[0].properties.get("common_name")
@@ -92,7 +80,7 @@ def resize_and_convert_to_cog(asset: pystac.Asset, target_resolution=10):
         asset = pc.sign(raw_asset)
 
     with rasterio.open(asset.get_absolute_href()) as src:
-
+        output_file = f"./{URL(asset.get_absolute_href()).name}"
         if src.transform.a > target_resolution and (not (os.path.isfile(output_file))):
 
             # Calculate the new shape based on the target resolution
@@ -128,20 +116,27 @@ def resize_and_convert_to_cog(asset: pystac.Asset, target_resolution=10):
             # Write data directly to a COG file
             with rasterio.open(output_file, "w", **profile) as dst:
                 dst.write(data)
+
+            logger.info(f"Resampled asset saved to {output_file}")
+            return output_file
+
         else:
             logger.info(
                 f"Asset {common_band_name} already in {target_resolution}m resolution."
             )
 
-    return asset
+    return asset.get_absolute_href()
 
 
-def update_and_resample_asset(asset, target_resolution=10):
+def update_and_resample_asset(asset: pystac.Asset, target_resolution=10) -> str:
+    """Update asset href by resampling if needed."""
     if "data" in asset.to_dict()["roles"]:
-        return resize_and_convert_to_cog(asset, target_resolution).get_absolute_href()
-
+        return resize_and_convert_to_cog(asset, target_resolution)
+    else:
+        return asset.get_absolute_href()    
 
 def stack_separated_bands(window, srcs, common_assets):
+    """Stack bands from separate assets into a single array for the given window."""
     block = np.empty((len(common_assets), window.height, window.width), dtype=np.uint16)
     for i, (band, src) in enumerate(srcs.items()):
         block[i, :, :] = src.read(1, window=window)
@@ -149,6 +144,7 @@ def stack_separated_bands(window, srcs, common_assets):
 
 
 def predict(inference_function, input_tensor, channels=[1, 2, 3, 7, 11, 12]):
+    """Make prediction using the inference function and input tensor."""
     input_tensor = input_tensor.astype(np.float32)
     input_tensor = input_tensor[channels]
 
@@ -237,6 +233,7 @@ def get_raster_info(
 
 
 def generate_asset_overview(asset_in_key, target_dir):
+    """Generate a STAC Asset for the overview of a raster file."""
     asset_out_key = f"{asset_in_key}"
     raster_info = {
         "raster:bands": get_raster_info(
@@ -255,6 +252,7 @@ def generate_asset_overview(asset_in_key, target_dir):
 
 
 def to_stac(geotiff_path, item):
+    """Convert a GeoTIFF file to a STAC Item."""
     asset_key, asset = generate_asset_overview(
         asset_in_key="flood-delineation", target_dir=geotiff_path
     )
@@ -271,6 +269,9 @@ def to_stac(geotiff_path, item):
 
 
 def save_prediction(data, output_href, meta):
+    """
+    Save the prediction result to a GeoTIFF file.
+    """
     meta.update(
         {
             "driver": "COG",
@@ -302,6 +303,9 @@ def save_prediction(data, output_href, meta):
 
 
 def save_overview(data, output_href, meta):
+    """
+    Save the overview of a raster file to a GeoTIFF file.
+    """
     meta.update(
         {
             "driver": "COG",
@@ -336,7 +340,7 @@ def save_overview(data, output_href, meta):
 def model_configuration(
     num_of_available_bands: int, th_water: float = 0.7, th_brightness: float = 3500
 ):
-
+    """Configure the model and load the inference function based on available bands."""
     distinguish_flood_traces = True if num_of_available_bands > 4 else False
     experiment_name = (
         "WF2_unetv2_bgriswirs" if num_of_available_bands > 4 else "WF2_unetv2_rgbi"
@@ -357,6 +361,8 @@ def model_configuration(
 
 
 def create_stac_catalog(item: pystac.Item, result_prefix: str):
+    """Create a STAC Catalog for the flood delineation result."""
+    logger.info(f"Creating STAC Item for the flood delineation result")
     out_item = to_stac(f"{result_prefix}.tif", item)
     logger.info(f"Creating a STAC Catalog for the flood delineation result")
     cat = pystac.Catalog(
@@ -403,3 +409,10 @@ def get_mission(item: pystac.Item) -> str:
     elif "landsat-8" in item.properties.get("constellation", ""):
         return "landsat"
     return item.properties.get("mission", "unknown")
+
+
+def clean_up(temp_files: List[str]) -> None:
+    """Remove temporary files."""
+    for href in temp_files:
+        if URL(href).scheme not in ["http", "https"]:
+            os.remove(href)

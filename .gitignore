@@ -5,3 +5,5 @@ LC0*
 t.ipynb
 __pycache__
 .cache
+codemeta.json
+.vscode

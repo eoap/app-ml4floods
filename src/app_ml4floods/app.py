@@ -16,6 +16,7 @@ from app_ml4floods.utils import (
     item_filter_assets,
     model_configuration,
     predict,
+    clean_up,
 )
 from tqdm import tqdm
 
@@ -54,10 +55,12 @@ def main(input_item, water_threshold, brightness_threshold):
 
     # Read Item and its assets
     if os.path.isdir(input_item):
+        logger.info(f"Reading STAC catalog from a local STAC Catalog at {input_item}")
         catalog = pystac.read_file(os.path.join(input_item, "catalog.json"))
         item = next(catalog.get_items())
         item, common_assets = item_filter_assets(item)
     else:
+        logger.info(f"Reading STAC Item from {input_item}")
         item = pystac.read_file(input_item)
         item, common_assets = item_filter_assets(item)
 
@@ -82,14 +85,19 @@ def main(input_item, water_threshold, brightness_threshold):
     else:
         channels = [1, 2, 3, 7]  # ['blue', 'green', 'red', 'nir']
 
-    ### Resample assets which are in different resolutions into 10m
+    local_hrefs = []
+    ### Sign and resample assets if needed
     for key, asset in item.get_assets().items():
+        logger.info(f"Processing asset {key}: {type(asset)}")
         updated_asset_href = update_and_resample_asset(
             asset=asset, target_resolution=get_target_resolution(item)
         )
         asset.href = updated_asset_href
-        item.add_asset(key, asset)
+        logger.info(f"Updated asset href for {key}: {updated_asset_href}")
+        item.assets[key] = asset
+        local_hrefs.append(updated_asset_href)
 
+    
     ### Open the tif file
     srcs = {
         asset_key: rasterio.open(asset.href)
@@ -154,6 +162,9 @@ def main(input_item, water_threshold, brightness_threshold):
     save_overview(prediction_block_raster.values, f"{result_prefix}-overview.tif", meta)
     del arr_block, prediction
     create_stac_catalog(item=item, result_prefix=result_prefix)
+
+    clean_up(local_hrefs)
+
     logger.info("Done!")
 
 
