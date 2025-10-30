@@ -21,7 +21,6 @@ s:author:
   s:familyName: Brito
   s:givenName: Fabrice
   s:identifier: https://orcid.org/0009-0000-1342-9736
-  s:name: Brito, Fabrice
 - '@type': s:Person
   s:affiliation:
     '@type': s:Organization
@@ -31,7 +30,6 @@ s:author:
   s:familyName: Re
   s:givenName: Alice
   s:identifier: https://orcid.org/0000-0001-7068-5533
-  s:name: Re, Alice
 - '@type': s:Person
   s:affiliation:
     '@type': s:Organization
@@ -41,7 +39,6 @@ s:author:
   s:familyName: Tripodi
   s:givenName: Simone
   s:identifier: https://orcid.org/0009-0006-2063-618X
-  s:name: Tripodi, Simone
 s:codeRepository: https://github.com/eoap/app-ml4floods.git
 s:copyrightYear: 2025
 s:dateCreated: '2025-10-29'
