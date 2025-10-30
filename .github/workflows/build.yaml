@@ -41,9 +41,7 @@ jobs:
     - run: pip install transpiler-mate
     - run: |
         transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
-        mv cwl-workflow/codemeta.json codemeta.json
-    #- run: echo "APP_VERSION=$(cat codemeta.json | jq -r .version )" >> $GITHUB_ENV
-    - run: echo "APP_VERSION=0.1.0" >> $GITHUB_ENV
+    - run: echo "APP_VERSION=$(cat codemeta.json | jq -r .version )" >> $GITHUB_ENV
     - run: echo app version is $APP_VERSION
     - id: set-version
       run: echo "::set-output name=version::$APP_VERSION"
@@ -141,7 +139,7 @@ jobs:
     - run: pip install transpiler-mate
     - run: |
         transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
-        cp -r cwl-workflow/codemeta.json downloads/codemeta.json
+        cp -r codemeta.json downloads/codemeta.json
 
     - uses: actions/upload-artifact@v4
       with:
