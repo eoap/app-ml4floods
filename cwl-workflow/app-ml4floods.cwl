@@ -7,7 +7,7 @@ schemas:
 
 s:softwareVersion: 0.1.0
 
-s:abstract: ML4Floods is an end-to-end ML pipeline for flood extent estimation using optical satellite data from Sentinel-2 or
+s:description: ML4Floods is an end-to-end ML pipeline for flood extent estimation using optical satellite data from Sentinel-2 or
   Landsat-8/9 acquisition
 s:applicationCategory: Earth Observation application package
 s:applicationSubCategory: CWL Workflow
@@ -15,47 +15,38 @@ s:author:
 - '@type': s:Person
   s:affiliation:
     '@type': s:Organization
-    s:identifier: 0069cx113
+    s:identifier: https://ror.org/0069cx113
     s:name: Terradue
   s:email: fabrice.brito@terradue.com
   s:familyName: Brito
   s:givenName: Fabrice
-  s:identifier:
-    '@type': s:PropertyValue
-    s:propertyID: ORCID
-    s:valueReference: 0009-0000-1342-9736
+  s:identifier: https://orcid.org/0009-0000-1342-9736
   s:name: Brito, Fabrice
 - '@type': s:Person
   s:affiliation:
     '@type': s:Organization
-    s:identifier: 0069cx113
+    s:identifier: https://ror.org/0069cx113
     s:name: Terradue
-  s:email: parham.membari@terradue.com
-  s:familyName: Membari
-  s:givenName: Parham
-  s:identifier:
-    '@type': s:PropertyValue
-    s:propertyID: ORCID
-    s:valueReference: 0009-0004-7594-4011
-  s:name: Membari, Parham
+  s:email: alice.re@terradue.com
+  s:familyName: Re
+  s:givenName: Alice
+  s:identifier: https://orcid.org/0000-0001-7068-5533
+  s:name: Re, Alice
 - '@type': s:Person
   s:affiliation:
     '@type': s:Organization
-    s:identifier: 0069cx113
+    s:identifier: https://ror.org/0069cx113
     s:name: Terradue
   s:email: simone.tripodi@terradue.com
   s:familyName: Tripodi
   s:givenName: Simone
-  s:identifier:
-    '@type': s:PropertyValue
-    s:propertyID: ORCID
-    s:valueReference: 0009-0006-2063-618X
+  s:identifier: https://orcid.org/0009-0006-2063-618X
   s:name: Tripodi, Simone
 s:codeRepository: https://github.com/eoap/app-ml4floods.git
 s:copyrightYear: 2025
 s:dateCreated: '2025-10-29'
 
-s:headline: ML4Floods inference for flood extent estimation using pre-trained model on Sentinel-2 or Landsat-9 data
+s:name: ML4Floods inference for flood extent estimation using pre-trained model on Sentinel-2 or Landsat-9 data
 s:keywords:
 - CWL
 - Workflow
@@ -81,15 +72,11 @@ s:operatingSystem:
 s:publisher:
   '@type': s:Organization
   s:email: info@terradue.com
-  s:identifier:
-    '@type': s:PropertyValue
-    s:propertyID: ORCID
-    s:valueReference: 0069cx113
+  s:identifier: https://ror.org/0069cx113
   s:name: Terradue Srl
 
 s:softwareHelp:
   '@type': s:CreativeWork
-  s:encodingFormat: text/html
   s:name: User Manual
   s:url: https://eoap.github.io/app-ml4floods/
 s:softwareRequirements:
