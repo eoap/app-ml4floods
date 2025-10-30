@@ -141,7 +141,7 @@ jobs:
     - run: pip install transpiler-mate
     - run: |
         transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
-        mv cwl-workflow/codemeta.json codemeta.json
+        mv cwl-workflow/codemeta.json downloads/codemeta.json
 
     - uses: actions/upload-artifact@v4
       with:
