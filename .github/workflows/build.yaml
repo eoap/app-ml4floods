@@ -141,7 +141,7 @@ jobs:
     - run: pip install transpiler-mate
     - run: |
         transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
-        mv cwl-workflow/codemeta.json downloads/codemeta.json
+        cp -r cwl-workflow/codemeta.json downloads/codemeta.json
 
     - uses: actions/upload-artifact@v4
       with:
@@ -158,6 +158,12 @@ jobs:
         asset_path: downloads/${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
         asset_name: ${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
         asset_content_type: text/yaml
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: codemeta.json
+        path: downloads
+        overwrite: true
 
     - name: upload codemeta to release
       uses: actions/upload-release-asset@v1
