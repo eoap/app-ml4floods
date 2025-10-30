@@ -65,7 +65,7 @@ s:license:
   s:identifier: CC-BY-4.0
   s:name: License CC BY 4.0
   s:url: https://creativecommons.org/licenses/by/4.0/
-s:name: WBD
+
 s:operatingSystem:
 - Linux
 - MacOS X
