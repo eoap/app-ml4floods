@@ -191,15 +191,3 @@ jobs:
           --artifact-type application/cwl \
           "$FILE:application/cwl"
 
-    - name: Push CWL as OCI Artifact to harbor
-      run: |
-        set -x
-        cd downloads
-        FILE=${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
-        NAME=${{ secrets.CR_REPO }}/${{ secrets.CR_PROJECT }}/${{matrix.step}}:${{needs.version.outputs.app-version}}
-
-        echo "${{ secrets.CR_PASSWORD }}" | oras login "${{ secrets.CR_REPO }}" -u "${{ secrets.CR_USERNAME }}" --password-stdin
-
-        oras push "$NAME" \
-          --artifact-type application/cwl \
-          "$FILE:application/cwl"
