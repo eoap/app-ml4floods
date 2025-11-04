@@ -49,9 +49,6 @@ s:softwareHelp:
   '@type': s:CreativeWork
   s:name: User Manual
   s:url: https://eoap.github.io/app-ml4floods/
-s:softwareRequirements:
-- https://cwltool.readthedocs.io/en/latest/
-- https://www.python.org/
 
 # Publisher
 
