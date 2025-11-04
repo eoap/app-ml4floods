@@ -38,9 +38,8 @@ jobs:
     - uses: actions/setup-python@v2
       with:
         python-version: 3.x
-    - run: pip install "transpiler-mate>=0.4.0"
-    - run: |
-        transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
+    - run: pip install "transpiler-mate>=0.14.0"
+    - run: transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
     - run: echo "APP_VERSION=$(cat codemeta.json | jq -r .softwareVersion )" >> $GITHUB_ENV
     - run: echo app version is $APP_VERSION
     - id: set-version
@@ -136,10 +135,12 @@ jobs:
     - run: |
         mkdir -p downloads
         cp cwl-workflow/${{matrix.step}}.cwl downloads/${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
-    - run: pip install "transpiler-mate>=0.4.0"
-    - run: |
-        transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
-        cp -r codemeta.json downloads/codemeta.json
+    - run: pip install "cwl2ogc>=0.10.0" "cwl2puml>0.29.0" "transpiler-mate>=0.14.0"
+    - run: cwl2ogc --workflow-id ml4floods --output=./downloads/ogcapi_process.json ./cwl-workflow/app-ml4floods.cwl
+    - run: cwl2puml --workflow-id ml4floods --output=./downloads ./cwl-workflow/app-ml4floods.cwl
+    - run: transpiler-mate codemeta --output=./downloads/codemeta.json cwl-workflow/app-ml4floods.cwl
+    - run: transpiler-mate datacite --output=./downloads/datacite.json cwl-workflow/app-ml4floods.cwl
+    - run: transpiler-mate ogcrecord --output=./downloads/ogcapi_record.json cwl-workflow/app-ml4floods.cwl
 
     - uses: actions/upload-artifact@v4
       with:
@@ -157,6 +158,8 @@ jobs:
         asset_name: ${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
         asset_content_type: text/yaml
 
+    # codemeta
+
     - uses: actions/upload-artifact@v4
       with:
         name: codemeta.json
@@ -172,6 +175,132 @@ jobs:
         asset_path: downloads/codemeta.json
         asset_name: codemeta.json
         asset_content_type: text/json
+
+    # datacite
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: datacite.json
+        path: downloads
+        overwrite: true
+
+    - name: upload datacite to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/datacite.json
+        asset_name: datacite.json
+        asset_content_type: text/json
+
+    # ogcapi_process
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ogcapi_process.json
+        path: downloads
+        overwrite: true
+
+    - name: upload ogcapi_process to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/ogcapi_process.json
+        asset_name: ogcapi_process.json
+        asset_content_type: text/json
+
+    # ogcapi_record
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ogcapi_record.json
+        path: downloads
+        overwrite: true
+
+    - name: upload ogcapi_record to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/ogcapi_record.json
+        asset_name: ogcapi_record.json
+        asset_content_type: text/json
+
+    # component
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: component.png
+        path: downloads
+        overwrite: true
+
+    - name: upload component to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/component.png
+        asset_name: component.png
+        asset_content_type: image/png
+
+    # class
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: class.png
+        path: downloads
+        overwrite: true
+
+    - name: upload class to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/class.png
+        asset_name: class.png
+        asset_content_type: image/png
+
+    # sequence
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sequence.png
+        path: downloads
+        overwrite: true
+
+    - name: upload sequence to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/sequence.png
+        asset_name: sequence.png
+        asset_content_type: image/png
+
+    # state
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: state.png
+        path: downloads
+        overwrite: true
+
+    - name: upload state to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/state.png
+        asset_name: state.png
+        asset_content_type: image/png
 
     - name: Setup ORAS CLI
       uses: oras-project/setup-oras@v1
