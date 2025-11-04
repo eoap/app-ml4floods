@@ -63,7 +63,8 @@ s:publisher:
 s:author:
 - '@type': s:Role
   s:roleName: Project Manager
-  s:schema:author:
+  s:additionalType: http://purl.org/spar/datacite/ProjectManager
+  s:author:
     '@type': s:Person
     s:affiliation:
       '@type': s:Organization
@@ -75,7 +76,8 @@ s:author:
     s:identifier: https://orcid.org/0009-0000-1342-9736
 - '@type': s:Role
   s:roleName: Researcher
-  s:schema:author:
+  s:additionalType: http://purl.org/spar/datacite/Researcher
+  s:author:
     '@type': s:Person
     s:affiliation:
       '@type': s:Organization
@@ -87,7 +89,8 @@ s:author:
     s:identifier: https://orcid.org/0000-0001-7068-5533
 - '@type': s:Role
   s:roleName: Project Leader
-  s:schema:author:
+  s:additionalType: http://purl.org/spar/datacite/ProjectLeader
+  s:author:
     '@type': s:Person
     s:affiliation:
       '@type': s:Organization
@@ -100,6 +103,8 @@ s:author:
 
 s:contributor:
   '@type': s:Role
+  s:roleName: Researcher
+  s:additionalType: http://purl.org/spar/datacite/Researcher
   s:contributor:
     '@type': s:Person
     s:affiliation:
@@ -110,7 +115,6 @@ s:contributor:
     s:familyName: Vaccari
     s:givenName: Simone
     s:identifier: https://orcid.org/0000-0002-2757-4165
-  s:roleName: Researcher
 
 # CWL Workflow
 
