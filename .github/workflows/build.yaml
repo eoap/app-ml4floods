@@ -62,33 +62,33 @@ jobs:
     - run: |
         nose2
 
-  container-build:
+  # container-build:
 
-    needs: 
-    - version
-    - test-runner
+  #   needs: 
+  #   - version
+  #   - test-runner
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        step: ['app-ml4floods']
+  #   strategy:
+  #     matrix:
+  #       step: ['app-ml4floods']
 
-    steps:
-    - uses: actions/checkout@v2
-    - run: echo version ${{needs.version.outputs.app-version}}
-    - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-    - name: build & push image
-      run: |
-        IMAGE_ID=ghcr.io/eoap/${{ matrix.step }}
-        docker build --file Dockerfile --tag ${{ matrix.step }} .
-        docker tag ${{ matrix.step }} $IMAGE_ID:${{needs.version.outputs.app-version}}
-        docker push $IMAGE_ID:${{needs.version.outputs.app-version}}
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - run: echo version ${{needs.version.outputs.app-version}}
+  #   - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+  #   - name: build & push image
+  #     run: |
+  #       IMAGE_ID=ghcr.io/eoap/${{ matrix.step }}
+  #       docker build --file Dockerfile --tag ${{ matrix.step }} .
+  #       docker tag ${{ matrix.step }} $IMAGE_ID:${{needs.version.outputs.app-version}}
+  #       docker push $IMAGE_ID:${{needs.version.outputs.app-version}}
 
   create-release:
 
     needs:
-    - container-build
+    # - container-build
     - version
 
     runs-on: ubuntu-latest
