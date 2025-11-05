@@ -38,7 +38,7 @@ jobs:
     - uses: actions/setup-python@v2
       with:
         python-version: 3.x
-    - run: pip install "transpiler-mate>=0.16.0"
+    - run: pip install "transpiler-mate>=0.17.0"
     - run: transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
     - run: echo "APP_VERSION=$(cat codemeta.json | jq -r .softwareVersion )" >> $GITHUB_ENV
     - run: echo app version is $APP_VERSION
@@ -136,7 +136,7 @@ jobs:
     - run: |
         mkdir -p downloads
         cp cwl-workflow/${{matrix.step}}.cwl downloads/${{matrix.step}}-${{needs.version.outputs.app-version}}.cwl
-    - run: pip install "cwl2ogc>=0.10.0" "cwl2puml>=0.29.0" "transpiler-mate>=0.16.0"
+    - run: pip install "cwl2ogc>=0.10.0" "cwl2puml>=0.29.0" "transpiler-mate>=0.17.0"
     - run: cwl2ogc --workflow-id ml4floods --output=./downloads/${{matrix.step}}-ogcapi_process-${{needs.version.outputs.app-version}}.json ./cwl-workflow/app-ml4floods.cwl
     - run: |
         cwl2puml --workflow-id ml4floods --output=./downloads ./cwl-workflow/app-ml4floods.cwl
@@ -145,6 +145,19 @@ jobs:
     - run: transpiler-mate codemeta --code-repository=`git remote get-url origin` --output=./downloads/${{matrix.step}}-codemeta-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
     - run: transpiler-mate datacite --output=./downloads/${{matrix.step}}-datacite-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
     - run: transpiler-mate ogcrecord --output=./downloads/${{matrix.step}}-ogcapi_record-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
+    - run: |
+        transpiler-mate invenio-publish \
+        --base-url=https://sandbox.zenodo.org \
+        --auth-token=${{ secrets.INVENIO_AUTH_TOKEN }} \
+        --attach=./downloads/${{matrix.step}}-codemeta-${{needs.version.outputs.app-version}}.json \
+        --attach=./downloads/${{matrix.step}}-datacite-${{needs.version.outputs.app-version}}.json \
+        --attach=./downloads/${{matrix.step}}-ogcapi_record-${{needs.version.outputs.app-version}}.json \
+        --attach=./downloads/${{matrix.step}}-state-${{needs.version.outputs.app-version}}.png \
+        --attach=./downloads/${{matrix.step}}-sequence-${{needs.version.outputs.app-version}}.png \
+        --attach=./downloads/${{matrix.step}}-class-${{needs.version.outputs.app-version}}.png \
+        --attach=./downloads/${{matrix.step}}-component-${{needs.version.outputs.app-version}}.png \
+        --attach=./downloads/${{matrix.step}}-activity-${{needs.version.outputs.app-version}}.png \
+        ./downloads/${{matrix.step}}-${{needs.version.outputs.app-version}}.cwl
 
     - uses: actions/upload-artifact@v4
       with:
