@@ -40,7 +40,7 @@ jobs:
         python-version: 3.x
     - run: pip install "transpiler-mate>=0.15.0"
     - run: transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
-    - run: echo "APP_VERSION=$(cat codemeta.json | jq -r .softwareVersion )" >> $GITHUB_ENV
+    - run: echo "APP_VERSION=$(cat ${{matrix.step}}-codemeta-${{needs.version.outputs.app-version}}.json | jq -r .softwareVersion )" >> $GITHUB_ENV
     - run: echo app version is $APP_VERSION
     - id: set-version
       run: echo "::set-output name=version::$APP_VERSION"
@@ -135,17 +135,20 @@ jobs:
       run: rm -rf downloads/*
     - run: |
         mkdir -p downloads
-        cp cwl-workflow/${{matrix.step}}.cwl downloads/${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
+        cp cwl-workflow/${{matrix.step}}.cwl downloads/${{matrix.step}}-${{needs.version.outputs.app-version}}.cwl
     - run: pip install "cwl2ogc>=0.10.0" "cwl2puml>=0.29.0" "transpiler-mate>=0.15.0"
-    - run: cwl2ogc --workflow-id ml4floods --output=./downloads/ogcapi_process.json ./cwl-workflow/app-ml4floods.cwl
-    - run: cwl2puml --workflow-id ml4floods --output=./downloads ./cwl-workflow/app-ml4floods.cwl
-    - run: transpiler-mate codemeta --code-repository=`git remote get-url origin` --output=./downloads/codemeta.json cwl-workflow/app-ml4floods.cwl
-    - run: transpiler-mate datacite --output=./downloads/datacite.json cwl-workflow/app-ml4floods.cwl
-    - run: transpiler-mate ogcrecord --output=./downloads/ogcapi_record.json cwl-workflow/app-ml4floods.cwl
+    - run: cwl2ogc --workflow-id ml4floods --output=./downloads/${{matrix.step}}-ogcapi_process-${{needs.version.outputs.app-version}}.json ./cwl-workflow/app-ml4floods.cwl
+    - run: |
+        cwl2puml --workflow-id ml4floods --output=./downloads ./cwl-workflow/app-ml4floods.cwl
+        rm ./downloads/*.puml
+        for f in ./downloads/*.png; do mv "$f" "./downloads/${{matrix.step}}-${f%.png}-${{needs.version.outputs.app-version}}.png"; done
+    - run: transpiler-mate codemeta --code-repository=`git remote get-url origin` --output=./downloads/${{matrix.step}}-codemeta-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
+    - run: transpiler-mate datacite --output=./downloads/${{matrix.step}}-datacite-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
+    - run: transpiler-mate ogcrecord --output=./downloads/${{matrix.step}}-ogcapi_record-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
 
     - uses: actions/upload-artifact@v4
       with:
-        name: application-package-${{matrix.step}}
+        name: ${{matrix.step}}-${{needs.version.outputs.app-version}}
         path: downloads
         overwrite: true
     
@@ -155,17 +158,11 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
-        asset_name: ${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
+        asset_path: downloads/${{matrix.step}}-${{needs.version.outputs.app-version}}.cwl
+        asset_name: ${{matrix.step}}-${{needs.version.outputs.app-version}}.cwl
         asset_content_type: text/yaml
 
     # codemeta
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: codemeta.json
-        path: downloads
-        overwrite: true
 
     - name: upload codemeta to release
       uses: actions/upload-release-asset@v1
@@ -173,35 +170,11 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/codemeta.json
-        asset_name: codemeta.json
-        asset_content_type: text/json
-
-    # datacite
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: datacite.json
-        path: downloads
-        overwrite: true
-
-    - name: upload datacite to release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/datacite.json
-        asset_name: datacite.json
+        asset_path: downloads/${{matrix.step}}-codemeta-${{needs.version.outputs.app-version}}.json
+        asset_name: ${{matrix.step}}-codemeta-${{needs.version.outputs.app-version}}.json
         asset_content_type: text/json
 
     # ogcapi_process
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ogcapi_process.json
-        path: downloads
-        overwrite: true
 
     - name: upload ogcapi_process to release
       uses: actions/upload-release-asset@v1
@@ -209,17 +182,11 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/ogcapi_process.json
-        asset_name: ogcapi_process.json
+        asset_path: downloads/${{matrix.step}}-ogcapi_process-${{needs.version.outputs.app-version}}.json
+        asset_name: ${{matrix.step}}-ogcapi_process-${{needs.version.outputs.app-version}}.json
         asset_content_type: text/json
 
     # ogcapi_record
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ogcapi_record.json
-        path: downloads
-        overwrite: true
 
     - name: upload ogcapi_record to release
       uses: actions/upload-release-asset@v1
@@ -227,17 +194,11 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/ogcapi_record.json
-        asset_name: ogcapi_record.json
+        asset_path: downloads/${{matrix.step}}-ogcapi_record-${{needs.version.outputs.app-version}}.json
+        asset_name: ${{matrix.step}}-ogcapi_record-${{needs.version.outputs.app-version}}.json
         asset_content_type: text/json
 
     # component
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: component.png
-        path: downloads
-        overwrite: true
 
     - name: upload component to release
       uses: actions/upload-release-asset@v1
@@ -245,17 +206,11 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/component.png
-        asset_name: component.png
+        asset_path: downloads/${{matrix.step}}-component-${{needs.version.outputs.app-version}}.png
+        asset_name: ${{matrix.step}}-component-${{needs.version.outputs.app-version}}.png
         asset_content_type: image/png
 
     # class
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: class.png
-        path: downloads
-        overwrite: true
 
     - name: upload class to release
       uses: actions/upload-release-asset@v1
@@ -263,17 +218,11 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/class.png
-        asset_name: class.png
+        asset_path: downloads/${{matrix.step}}-class-${{needs.version.outputs.app-version}}.png
+        asset_name: ${{matrix.step}}-class-${{needs.version.outputs.app-version}}.png
         asset_content_type: image/png
 
     # sequence
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: sequence.png
-        path: downloads
-        overwrite: true
 
     - name: upload sequence to release
       uses: actions/upload-release-asset@v1
@@ -281,17 +230,11 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/sequence.png
-        asset_name: sequence.png
+        asset_path: downloads/${{matrix.step}}-sequence-${{needs.version.outputs.app-version}}.png
+        asset_name: ${{matrix.step}}-sequence-${{needs.version.outputs.app-version}}.png
         asset_content_type: image/png
 
     # state
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: state.png
-        path: downloads
-        overwrite: true
 
     - name: upload state to release
       uses: actions/upload-release-asset@v1
@@ -299,9 +242,21 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{needs.create-release.outputs.upload_url}}
-        asset_path: downloads/state.png
-        asset_name: state.png
+        asset_path: downloads/${{matrix.step}}-state-${{needs.version.outputs.app-version}}.png
+        asset_name: ${{matrix.step}}-state-${{needs.version.outputs.app-version}}.png
         asset_content_type: image/png
+
+    # datacite
+
+    - name: upload datacite to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{needs.create-release.outputs.upload_url}}
+        asset_path: downloads/${{matrix.step}}-datacite-${{needs.version.outputs.app-version}}.json
+        asset_name: ${{matrix.step}}-datacite-${{needs.version.outputs.app-version}}.json
+        asset_content_type: text/json
 
     - name: Setup ORAS CLI
       uses: oras-project/setup-oras@v1
