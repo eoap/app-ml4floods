@@ -261,16 +261,16 @@ jobs:
     - name: Setup ORAS CLI
       uses: oras-project/setup-oras@v1
     
-    - name: Push CWL as OCI Artifact to GHCR
-      run: |
-        set -x
-        cd downloads
-        FILE=${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
-        NAME=ghcr.io/eoap/app-ml4floods/${{matrix.step}}:${{needs.version.outputs.app-version}}
+    # - name: Push CWL as OCI Artifact to GHCR
+    #   run: |
+    #     set -x
+    #     cd downloads
+    #     FILE=${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
+    #     NAME=ghcr.io/eoap/app-ml4floods/${{matrix.step}}:${{needs.version.outputs.app-version}}
 
-        echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u ${{ github.actor }} --password-stdin
+    #     echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u ${{ github.actor }} --password-stdin
 
-        oras push "$NAME" \
-          --artifact-type application/cwl \
-          "$FILE:application/cwl"
+    #     oras push "$NAME" \
+    #       --artifact-type application/cwl \
+    #       "$FILE:application/cwl"
 
