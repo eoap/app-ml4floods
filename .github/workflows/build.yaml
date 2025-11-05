@@ -141,7 +141,7 @@ jobs:
     - run: |
         cwl2puml --workflow-id ml4floods --output=./downloads ./cwl-workflow/app-ml4floods.cwl
         rm ./downloads/*.puml
-        for f in ./downloads/*.png; do mv "$f" "./downloads/${{matrix.step}}-${f%.png}-${{needs.version.outputs.app-version}}.png"; done
+        for f in ./downloads/*.png; do mv "$f" "./downloads/${{matrix.step}}-$(basename -- ${f%.png})-${{needs.version.outputs.app-version}}.png"; done
     - run: transpiler-mate codemeta --code-repository=`git remote get-url origin` --output=./downloads/${{matrix.step}}-codemeta-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
     - run: transpiler-mate datacite --output=./downloads/${{matrix.step}}-datacite-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
     - run: transpiler-mate ogcrecord --output=./downloads/${{matrix.step}}-ogcapi_record-${{needs.version.outputs.app-version}}.json cwl-workflow/app-ml4floods.cwl
