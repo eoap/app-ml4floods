@@ -136,7 +136,7 @@ jobs:
     - run: |
         mkdir -p downloads
         cp cwl-workflow/${{matrix.step}}.cwl downloads/${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
-    - run: pip install "cwl2ogc>=0.10.0" "cwl2puml>0.29.0" "transpiler-mate>=0.15.0"
+    - run: pip install "cwl2ogc>=0.10.0" "cwl2puml>=0.29.0" "transpiler-mate>=0.15.0"
     - run: cwl2ogc --workflow-id ml4floods --output=./downloads/ogcapi_process.json ./cwl-workflow/app-ml4floods.cwl
     - run: cwl2puml --workflow-id ml4floods --output=./downloads ./cwl-workflow/app-ml4floods.cwl
     - run: transpiler-mate codemeta --code-repository=`git remote get-url origin` --output=./downloads/codemeta.json cwl-workflow/app-ml4floods.cwl
