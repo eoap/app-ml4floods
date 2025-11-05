@@ -62,33 +62,33 @@ jobs:
     - run: |
         nose2
 
-  # container-build:
+  container-build:
 
-  #   needs: 
-  #   - version
-  #   - test-runner
+    needs: 
+    - version
+    - test-runner
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   strategy:
-  #     matrix:
-  #       step: ['app-ml4floods']
+    strategy:
+      matrix:
+        step: ['app-ml4floods']
 
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - run: echo version ${{needs.version.outputs.app-version}}
-  #   - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-  #   - name: build & push image
-  #     run: |
-  #       IMAGE_ID=ghcr.io/eoap/${{ matrix.step }}
-  #       docker build --file Dockerfile --tag ${{ matrix.step }} .
-  #       docker tag ${{ matrix.step }} $IMAGE_ID:${{needs.version.outputs.app-version}}
-  #       docker push $IMAGE_ID:${{needs.version.outputs.app-version}}
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo version ${{needs.version.outputs.app-version}}
+    - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+    - name: build & push image
+      run: |
+        IMAGE_ID=ghcr.io/eoap/${{ matrix.step }}
+        docker build --file Dockerfile --tag ${{ matrix.step }} .
+        docker tag ${{ matrix.step }} $IMAGE_ID:${{needs.version.outputs.app-version}}
+        docker push $IMAGE_ID:${{needs.version.outputs.app-version}}
 
   create-release:
 
     needs:
-    # - container-build
+    - container-build
     - version
 
     runs-on: ubuntu-latest
@@ -125,12 +125,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    # - run: |
-    #     set -x
-    #     tag="ghcr.io/eoap/${{matrix.step}}:${{needs.version.outputs.app-version}}"
-    #     docker pull ${tag}
-    #     shatag=$( docker inspect ${tag} | yq -r '.[0]["RepoDigests"][0]' )
-    #     s="ml4floods-cli" t="${shatag}" yq -i eval '(.$graph[] | select (.id == env(s)) ).requirements.DockerRequirement.dockerPull = env(t)' cwl-workflow/${{matrix.step}}.cwl
+    - run: |
+        set -x
+        tag="ghcr.io/eoap/${{matrix.step}}:${{needs.version.outputs.app-version}}"
+        docker pull ${tag}
+        shatag=$( docker inspect ${tag} | yq -r '.[0]["RepoDigests"][0]' )
+        s="ml4floods-cli" t="${shatag}" yq -i eval '(.$graph[] | select (.id == env(s)) ).requirements.DockerRequirement.dockerPull = env(t)' cwl-workflow/${{matrix.step}}.cwl
     - name: Cleanup downloads folder
       run: rm -rf downloads/*
     - run: |
@@ -274,16 +274,15 @@ jobs:
     - name: Setup ORAS CLI
       uses: oras-project/setup-oras@v1
     
-    # - name: Push CWL as OCI Artifact to GHCR
-    #   run: |
-    #     set -x
-    #     cd downloads
-    #     FILE=${{matrix.step}}.${{needs.version.outputs.app-version}}.cwl
-    #     NAME=ghcr.io/eoap/app-ml4floods/${{matrix.step}}:${{needs.version.outputs.app-version}}
+    - name: Push CWL as OCI Artifact to GHCR
+      run: |
+        set -x
+        cd downloads
+        FILE=${{matrix.step}}-${{needs.version.outputs.app-version}}.cwl
+        NAME=ghcr.io/eoap/app-ml4floods/${{matrix.step}}:${{needs.version.outputs.app-version}}
 
-    #     echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u ${{ github.actor }} --password-stdin
+        echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u ${{ github.actor }} --password-stdin
 
-    #     oras push "$NAME" \
-    #       --artifact-type application/cwl \
-    #       "$FILE:application/cwl"
-
+        oras push "$NAME" \
+          --artifact-type application/cwl \
+          "$FILE:application/cwl"
