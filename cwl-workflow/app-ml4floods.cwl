@@ -44,7 +44,7 @@ s:softwareRequirements:
 
 # Current version of the software
 
-s:softwareVersion: 0.1.0
+s:softwareVersion: 0.2.0
 s:softwareHelp:
   '@type': s:CreativeWork
   s:name: User Manual
@@ -159,10 +159,6 @@ $graph:
 
 - class: CommandLineTool
   id: ml4floods-cli
-  
-  hints:
-    DockerRequirement:
-      dockerPull: docker.io/library/ml4floods-cli:latest
           
   baseCommand: ["ml4floods-cli"]
   inputs:
@@ -193,5 +189,6 @@ $graph:
     ResourceRequirement:
       coresMax: 1
       ramMax: 3000    
-
+    DockerRequirement:
+      dockerPull: docker.io/library/ml4floods-cli:latest
 
