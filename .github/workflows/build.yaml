@@ -127,9 +127,10 @@ jobs:
     - uses: actions/checkout@v2
     - run: |
         set -x
+        apt-get -y update
+        apt-get -y install skopeo
         tag="ghcr.io/eoap/${{matrix.step}}:${{needs.version.outputs.app-version}}"
-        docker pull ${tag}
-        shatag=$( docker inspect ${tag} | yq -r '.[0]["RepoDigests"][0]' )
+        shatag=$( skopeo inspect docker://${tag} | yq -r '.Digest' )
         s="ml4floods-cli" t="${shatag}" yq -i eval '(.$graph[] | select (.id == env(s)) ).requirements.DockerRequirement.dockerPull = env(t)' cwl-workflow/${{matrix.step}}.cwl
     - name: Cleanup downloads folder
       run: rm -rf downloads/*
