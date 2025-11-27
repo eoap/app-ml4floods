@@ -130,7 +130,9 @@ jobs:
         sudo apt-get -y update
         sudo apt-get -y install skopeo
         tag="ghcr.io/eoap/${{matrix.step}}:${{needs.version.outputs.app-version}}"
-        shatag=$( skopeo inspect docker://${tag} | yq -r '.Name' ):$( skopeo inspect docker://${tag} | yq -r '.Digest' )
+        image_name=$( skopeo inspect docker://${tag} | yq -r '.Name' )
+        image_digest=$( skopeo inspect docker://${tag} | yq -r '.Digest' )
+        shatag="${image_name}@${image_digest}"
         s="ml4floods-cli" t="${shatag}" yq -i eval '(.$graph[] | select (.id == env(s)) ).requirements.DockerRequirement.dockerPull = env(t)' cwl-workflow/${{matrix.step}}.cwl
     - name: Cleanup downloads folder
       run: rm -rf downloads/*
