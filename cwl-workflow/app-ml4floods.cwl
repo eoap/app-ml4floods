@@ -44,7 +44,7 @@ s:softwareRequirements:
 
 # Current version of the software
 
-s:softwareVersion: 0.2.0
+s:softwareVersion: 0.3.1
 s:softwareHelp:
   '@type': s:CreativeWork
   s:name: User Manual
@@ -187,8 +187,8 @@ $graph:
     NetworkAccess:
       networkAccess: true
     ResourceRequirement:
-      coresMax: 1
-      ramMax: 3000    
+      coresMax: 4
+      ramMax: 16000
     DockerRequirement:
-      dockerPull: docker.io/library/ml4floods-cli:latest
+      dockerPull: ghcr.io/eoap/app-ml4floods:0.2.0 # docker.io/library/ml4floods-cli:latest
 
