@@ -1,13 +1,11 @@
+import os
 from loguru import logger
-import numpy as np
 import rasterio
 import click
-from georeader.geotensor import GeoTensor
 from app_ml4floods.utils import (
     read_stac_item,
     update_item_assets,
     stack_separated_bands,
-    save_prediction,
     create_stac_catalog,
     item_filter_assets,
     model_configuration,
@@ -15,6 +13,7 @@ from app_ml4floods.utils import (
     clean_up,
 )
 from tqdm import tqdm
+import shutil
 
 
 # Run:
@@ -49,103 +48,152 @@ from tqdm import tqdm
 )
 def main(input_item, water_threshold, brightness_threshold):
 
-    item = read_stac_item(input_item)
+    import os
+    import shutil
+    from rasterio.enums import Resampling
 
+    WORKDIR = "/tmp/ml4flood"
+    os.makedirs(WORKDIR, exist_ok=True)
+
+    # --------------------------------------------------
+    # Read and filter item
+    # --------------------------------------------------
+    item = read_stac_item(input_item)
     item, common_assets = item_filter_assets(item)
 
     logger.info(f"Read {item.id}, Available common bands: {common_assets}")
 
-    ### Configure model and load inference function
+    # --------------------------------------------------
+    # Model configuration
+    # --------------------------------------------------
     inference_function, config = model_configuration(
         num_of_available_bands=len(common_assets),
         th_water=water_threshold,
         th_brightness=brightness_threshold,
     )
-    _ = config["data_params"]["channel_configuration"]
-    if len(common_assets) > 4:
-        channels = [
-            1,
-            2,
-            3,
-            7,
-            11,
-            12,
-        ]  # ['blue', 'green', 'red', 'nir', 'swir16', 'swir22']
-    else:
-        channels = [1, 2, 3, 7]  # ['blue', 'green', 'red', 'nir']
 
-    # update and resample assets to the target resolution (10m for Sentinel-2 and 30m for Landsat-9) and get local hrefs for those
+    if len(common_assets) > 4:
+        channels = [1, 2, 3, 7, 11, 12]
+    else:
+        channels = [1, 2, 3, 7]
+
+    logger.info(f"Using channels: {channels}")
+
+    # --------------------------------------------------
+    # Prepare local assets (/tmp)
+    # --------------------------------------------------
     local_hrefs = update_item_assets(item)
 
-    ### Open the tif file
     srcs = {
         asset_key: rasterio.open(asset.href)
         for asset_key, asset in item.assets.items()
         if asset_key in common_assets
     }
+
     try:
-        # if we have RGB+NIR+SWIRS
-        referenced_src, meta = (
-            srcs[common_assets[4]],
-            srcs[common_assets[4]].meta.copy(),
-        )
+        referenced_src = srcs[common_assets[4]]
     except (IndexError, KeyError):
-        # if we have only RGB+NIR
-        referenced_src, meta = (
-            srcs[common_assets[0]],
-            srcs[common_assets[0]].meta.copy(),
-        )
-    prediction = np.empty(
-        (
-            referenced_src.height,
-            referenced_src.width,
-        ),
-        dtype=np.uint8,
-    )  # create the empty array
+        referenced_src = srcs[common_assets[0]]
 
-    ### read bands window by window and make prediction using pre-trained model
-    logger.info(
-        f"Using channels: {channels} for inference {list(range(len(channels)))}"
-    )
+    meta = referenced_src.meta.copy()
 
-    tqdm_loop = tqdm(
-        referenced_src.block_windows(1),
-        total=sum(1 for _ in referenced_src.block_windows(1)),
-        desc="Predicting",
-    )
-
-    for _, window in tqdm_loop:
-        arr_block = stack_separated_bands(window, srcs, common_assets)
-        tqdm_loop.set_postfix(
-            ordered_dict={
-                "col_off": window.col_off,
-                "row_off": window.row_off,
-                "block shape": arr_block.shape,
-            }
-        )
-        prediction_block, _ = predict(
-            inference_function, arr_block, channels=list(range(len(channels)))
-        )
-        prediction[
-            window.row_off : window.row_off + window.height,
-            window.col_off : window.col_off + window.width,
-        ] = prediction_block
-
-    # Save prediction as a COG tif image and provide STAC objects for that
+    # --------------------------------------------------
+    # Prepare streaming COG output
+    # --------------------------------------------------
     result_prefix = "flood-delineation"
-    logger.info(f"Saving classification result to {result_prefix}.tif")
-    prediction_block_raster = GeoTensor(
-        prediction, transform=meta["transform"], fill_value_default=0, crs=meta["crs"]
+    tmp_output = os.path.join(WORKDIR, f"{result_prefix}.tif")
+
+    meta.update(
+        {
+            "driver": "COG",
+            "dtype": "uint8",
+            "count": 1,
+            "blockxsize": 256,
+            "blockysize": 256,
+            "tiled": True,
+            "compress": "deflate",
+            "interleave": "band",
+        }
     )
-    save_prediction(prediction_block_raster.values, f"{result_prefix}.tif", meta)
 
-    del arr_block, prediction
-    create_stac_catalog(item=item, result_prefix=result_prefix)
+    logger.info(f"Writing output to {tmp_output}")
 
+    with rasterio.open(tmp_output, "w", **meta) as dst:
+
+        dst.write_colormap(
+            1,
+            {
+                0: (0, 0, 0),
+                1: (0, 128, 0),
+                2: (0, 0, 255),
+                3: (255, 255, 255),
+                5: (255, 0, 0),
+            },
+        )
+
+        windows = list(referenced_src.block_windows(1))
+
+        tqdm_loop = tqdm(
+            windows,
+            total=len(windows),
+            desc="Predicting",
+        )
+
+        for _, window in tqdm_loop:
+
+            arr_block = stack_separated_bands(window, srcs, common_assets)
+
+            prediction_block, _ = predict(
+                inference_function,
+                arr_block,
+                channels=list(range(len(channels))),
+            )
+
+            prediction_block_np = (
+                prediction_block
+                .detach()
+                .cpu()
+                .numpy()
+                .astype("uint8")
+            )
+
+            dst.write(prediction_block_np, 1, window=window)
+
+        dst.build_overviews([2, 4, 8, 16], Resampling.nearest)
+        dst.update_tags(ns="rio_overview", resampling="nearest")
+
+    # Close sources
+    for src in srcs.values():
+        src.close()
+
+    # --------------------------------------------------
+    # Create STAC catalog inside WORKDIR
+    # --------------------------------------------------
+    catalog_dir = create_stac_catalog(
+        item=item,
+        geotiff_path=tmp_output,
+        output_root=WORKDIR,
+    )
+
+    # --------------------------------------------------
+    # Move catalog to mounted volume
+    # --------------------------------------------------
+    final_output_dir = os.getcwd()
+    dest_path = os.path.join(final_output_dir, os.path.basename(catalog_dir))
+
+    if os.path.exists(dest_path):
+        logger.warning(f"Overwriting existing output: {dest_path}")
+        shutil.rmtree(dest_path)
+
+    shutil.move(catalog_dir, dest_path)
+
+    # --------------------------------------------------
+    # Cleanup temporary local assets
+    # --------------------------------------------------
     clean_up(local_hrefs)
 
     logger.info("Done!")
 
-
+    
 if __name__ == "__main__":
     main()
