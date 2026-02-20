@@ -131,8 +131,10 @@ def main(input_item, water_threshold, brightness_threshold):
             },
         )
 
+        logger.info("Calculating block windows for streaming processing")
         windows = list(referenced_src.block_windows(1))
 
+        logger.info("Starting prediction loop")
         tqdm_loop = tqdm(
             windows,
             total=len(windows),
@@ -158,8 +160,11 @@ def main(input_item, water_threshold, brightness_threshold):
             )
 
             dst.write(prediction_block_np, 1, window=window)
+        logger.info("Finished prediction loop")
 
+        logger.info("Building overviews")
         dst.build_overviews([2, 4, 8, 16], Resampling.nearest)
+        logger.info("Finished building overviews")
         dst.update_tags(ns="rio_overview", resampling="nearest")
 
     # Close sources
@@ -169,6 +174,7 @@ def main(input_item, water_threshold, brightness_threshold):
     # --------------------------------------------------
     # Create STAC catalog inside WORKDIR
     # --------------------------------------------------
+    logger.info("Creating STAC catalog for output")
     catalog_dir = create_stac_catalog(
         item=item,
         geotiff_path=tmp_output,
@@ -178,6 +184,7 @@ def main(input_item, water_threshold, brightness_threshold):
     # --------------------------------------------------
     # Move catalog to mounted volume
     # --------------------------------------------------
+    logger.info("Moving output catalog to final destination")
     final_output_dir = os.getcwd()
     dest_path = os.path.join(final_output_dir, os.path.basename(catalog_dir))
 

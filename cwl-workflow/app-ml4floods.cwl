@@ -44,7 +44,7 @@ s:softwareRequirements:
 
 # Current version of the software
 
-s:softwareVersion: 0.3.1
+s:softwareVersion: 0.3.2
 s:softwareHelp:
   '@type': s:CreativeWork
   s:name: User Manual
@@ -184,11 +184,21 @@ $graph:
     EnvVarRequirement:
       envDef:
         MPLCONFIGDIR: /tmp/matplotlib
+        OMP_NUM_THREADS: "2"
+        MKL_NUM_THREADS: "2"
+        OPENBLAS_NUM_THREADS: "2"
+        GDAL_NUM_THREADS: "2"
     NetworkAccess:
       networkAccess: true
     ResourceRequirement:
       coresMax: 4
       ramMax: 16000
     DockerRequirement:
-      dockerPull: ghcr.io/eoap/app-ml4floods:0.2.0 # docker.io/library/ml4floods-cli:latest
-
+      dockerPull: docker.io/library/ml4floods-cli:latest
+  #: ghcr.io/eoap/app-ml4floods:0.3.1 #  docker.io/library/ml4floods-cli:latest
+  # hints:
+  #   cwltool:CUDARequirement:
+  #     cudaVersionMin: "13.0"
+  #     cudaComputeCapability: "3.0"
+  #     cudaDeviceCountMin: 1
+  #     cudaDeviceCountMax: 1
