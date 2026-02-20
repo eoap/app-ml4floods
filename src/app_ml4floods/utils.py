@@ -207,7 +207,7 @@ def update_item_assets(item: Item) -> List[str]:
     target_resolution: int = get_target_resolution(item)
 
     for key, asset in item.get_assets().items():
-        logger.info(f"Processing asset {key}: {type(asset)}")
+        logger.info(f"Processing asset {key}")
 
         updated_asset_href: str = update_and_resample_asset(
             asset=asset,

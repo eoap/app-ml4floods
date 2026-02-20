@@ -1,4 +1,4 @@
-import os
+import sys
 from loguru import logger
 import rasterio
 import click
@@ -133,15 +133,14 @@ def main(input_item, water_threshold, brightness_threshold):
 
         logger.info("Calculating block windows for streaming processing")
         windows = list(referenced_src.block_windows(1))
-
+        total_windows = len(windows)
+        logger.info(f"Total number of blocks to process: {total_windows}")
         logger.info("Starting prediction loop")
-        tqdm_loop = tqdm(
-            windows,
-            total=len(windows),
-            desc="Predicting",
-        )
 
-        for _, window in tqdm_loop:
+
+        log_every = max(1, total_windows // 20)  # 5% increments
+
+        for i, (_, window) in enumerate(windows):
 
             arr_block = stack_separated_bands(window, srcs, common_assets)
 
@@ -159,6 +158,14 @@ def main(input_item, water_threshold, brightness_threshold):
                 .astype("uint8")
             )
 
+            if i % log_every == 0:
+                percent = 100 * i / total_windows
+                logger.info(
+                    f"Prediction progress: {i}/{total_windows} "
+                    f"({percent:.1f}%)"
+                )
+                break
+     
             dst.write(prediction_block_np, 1, window=window)
         logger.info("Finished prediction loop")
 
@@ -186,7 +193,7 @@ def main(input_item, water_threshold, brightness_threshold):
     # --------------------------------------------------
     logger.info("Moving output catalog to final destination")
     final_output_dir = os.getcwd()
-    dest_path = os.path.join(final_output_dir, os.path.basename(catalog_dir))
+    dest_path = os.path.join(final_output_dir) #, os.path.basename(catalog_dir))
 
     if os.path.exists(dest_path):
         logger.warning(f"Overwriting existing output: {dest_path}")
