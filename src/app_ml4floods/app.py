@@ -1,18 +1,14 @@
 from loguru import logger
-import os
 import numpy as np
 import rasterio
-import pystac
 import click
-from loguru import logger
 from georeader.geotensor import GeoTensor
 from app_ml4floods.utils import (
-    get_target_resolution,
+    read_stac_item,
+    update_item_assets,
     stack_separated_bands,
     save_prediction,
-    save_overview,
     create_stac_catalog,
-    update_and_resample_asset,
     item_filter_assets,
     model_configuration,
     predict,
@@ -53,16 +49,9 @@ from tqdm import tqdm
 )
 def main(input_item, water_threshold, brightness_threshold):
 
-    # Read Item and its assets
-    if os.path.isdir(input_item):
-        logger.info(f"Reading STAC catalog from a local STAC Catalog at {input_item}")
-        catalog = pystac.read_file(os.path.join(input_item, "catalog.json"))
-        item = next(catalog.get_items())
-        item, common_assets = item_filter_assets(item)
-    else:
-        logger.info(f"Reading STAC Item from {input_item}")
-        item = pystac.read_file(input_item)
-        item, common_assets = item_filter_assets(item)
+    item = read_stac_item(input_item)
+
+    item, common_assets = item_filter_assets(item)
 
     logger.info(f"Read {item.id}, Available common bands: {common_assets}")
 
@@ -72,7 +61,7 @@ def main(input_item, water_threshold, brightness_threshold):
         th_water=water_threshold,
         th_brightness=brightness_threshold,
     )
-    channel_configuration = config["data_params"]["channel_configuration"]
+    _ = config["data_params"]["channel_configuration"]
     if len(common_assets) > 4:
         channels = [
             1,
@@ -85,19 +74,9 @@ def main(input_item, water_threshold, brightness_threshold):
     else:
         channels = [1, 2, 3, 7]  # ['blue', 'green', 'red', 'nir']
 
-    local_hrefs = []
-    ### Sign and resample assets if needed
-    for key, asset in item.get_assets().items():
-        logger.info(f"Processing asset {key}: {type(asset)}")
-        updated_asset_href = update_and_resample_asset(
-            asset=asset, target_resolution=get_target_resolution(item)
-        )
-        asset.href = updated_asset_href
-        logger.info(f"Updated asset href for {key}: {updated_asset_href}")
-        item.assets[key] = asset
-        local_hrefs.append(updated_asset_href)
+    # update and resample assets to the target resolution (10m for Sentinel-2 and 30m for Landsat-9) and get local hrefs for those
+    local_hrefs = update_item_assets(item)
 
-    
     ### Open the tif file
     srcs = {
         asset_key: rasterio.open(asset.href)
@@ -110,7 +89,7 @@ def main(input_item, water_threshold, brightness_threshold):
             srcs[common_assets[4]],
             srcs[common_assets[4]].meta.copy(),
         )
-    except:
+    except (IndexError, KeyError):
         # if we have only RGB+NIR
         referenced_src, meta = (
             srcs[common_assets[0]],
@@ -132,10 +111,10 @@ def main(input_item, water_threshold, brightness_threshold):
     tqdm_loop = tqdm(
         referenced_src.block_windows(1),
         total=sum(1 for _ in referenced_src.block_windows(1)),
-        desc=f"Predicting",
+        desc="Predicting",
     )
 
-    for ji, window in tqdm_loop:
+    for _, window in tqdm_loop:
         arr_block = stack_separated_bands(window, srcs, common_assets)
         tqdm_loop.set_postfix(
             ordered_dict={
@@ -159,7 +138,7 @@ def main(input_item, water_threshold, brightness_threshold):
         prediction, transform=meta["transform"], fill_value_default=0, crs=meta["crs"]
     )
     save_prediction(prediction_block_raster.values, f"{result_prefix}.tif", meta)
-    save_overview(prediction_block_raster.values, f"{result_prefix}-overview.tif", meta)
+
     del arr_block, prediction
     create_stac_catalog(item=item, result_prefix=result_prefix)
 

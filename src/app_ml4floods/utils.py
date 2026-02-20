@@ -1,25 +1,52 @@
+from __future__ import annotations
 from loguru import logger
 import os
 from shutil import move
 import numpy as np
 import rasterio
 import pystac
+from pystac import Item, Asset, Catalog
 from rasterio.enums import Resampling
 from rio_stac.stac import create_stac_item
 import torch
-from rasterio.warp import Resampling
 from ml4floods.scripts.inference import load_inference_function
 from yarl import URL
 import math
 from typing import Dict, List
 import planetary_computer as pc
+from pystac.extensions.render import RenderExtension, Render
 
+from pystac.media_type import MediaType
+
+
+def read_stac_item(input_item: str) -> Item:
+    """
+    Read a STAC Item from either:
+    - a local STAC Catalog directory (expects catalog.json inside), or
+    - a direct STAC Item file/URL.
+    """
+
+    if os.path.isdir(input_item):
+        logger.info(
+            "Reading STAC catalog from a local STAC Catalog at %s",
+            input_item,
+        )
+        catalog: Catalog = pystac.read_file(os.path.join(input_item, "catalog.json"))
+        item: Item = next(catalog.get_items())
+    else:
+        logger.info(
+            "Reading STAC Item from %s",
+            input_item,
+        )
+        item: Item = pystac.read_file(input_item)
+
+    return item
 
 
 def get_asset(item, common_name) -> pystac.Asset | None:
     """Returns the asset of a STAC Item defined with its common band name"""
     for key, asset in item.get_assets().items():
-        if not "data" in asset.to_dict()["roles"]:
+        if "data" not in asset.to_dict()["roles"]:
             continue
 
         eo_asset = pystac.extensions.eo.AssetEOExtension(asset)
@@ -33,7 +60,7 @@ def get_asset(item, common_name) -> pystac.Asset | None:
                 return asset
 
 
-def item_filter_assets(item: pystac.Item) -> pystac.Item:
+def item_filter_assets(item: pystac.Item) -> tuple[Item, List[str]]:
     """Filter STAC Item assets to keep only those relevant for ML4Floods processing."""
 
     new_item = pystac.Item(
@@ -66,7 +93,9 @@ def item_filter_assets(item: pystac.Item) -> pystac.Item:
 
 def resize_and_convert_to_cog(asset: pystac.Asset, target_resolution=10) -> str:
 
-    logger.info(f"Resizing and converting asset {asset.get_absolute_href()} to COG format...")
+    logger.info(
+        f"Resizing and converting asset {asset.get_absolute_href()} to COG format..."
+    )
 
     eo_asset = pystac.extensions.eo.AssetEOExtension(asset)
     common_band_name = eo_asset.bands[0].properties.get("common_name")
@@ -82,7 +111,6 @@ def resize_and_convert_to_cog(asset: pystac.Asset, target_resolution=10) -> str:
     with rasterio.open(asset.get_absolute_href()) as src:
         output_file = f"./{URL(asset.get_absolute_href()).name}"
         if src.transform.a > target_resolution and (not (os.path.isfile(output_file))):
-
             # Calculate the new shape based on the target resolution
             scale_x = int(src.width * (src.res[0] / target_resolution))
             scale_y = int(src.height * (src.res[1] / target_resolution))
@@ -128,12 +156,39 @@ def resize_and_convert_to_cog(asset: pystac.Asset, target_resolution=10) -> str:
     return asset.get_absolute_href()
 
 
+def update_item_assets(item: Item) -> List[str]:
+    """
+    Update each asset href (sign/resample if needed) and return the list of updated hrefs.
+    Mutates `item.assets` in place.
+    """
+    local_hrefs: List[str] = []
+
+    target_resolution: int = get_target_resolution(item)
+
+    for key, asset in item.get_assets().items():
+        logger.info(f"Processing asset {key}: {type(asset)}")
+
+        updated_asset_href: str = update_and_resample_asset(
+            asset=asset,
+            target_resolution=target_resolution,
+        )
+
+        asset.href = updated_asset_href
+        logger.info(f"Updated asset href for {key}: {updated_asset_href}")
+
+        item.assets[key] = asset
+        local_hrefs.append(updated_asset_href)
+
+    return local_hrefs
+
+
 def update_and_resample_asset(asset: pystac.Asset, target_resolution=10) -> str:
     """Update asset href by resampling if needed."""
     if "data" in asset.to_dict()["roles"]:
         return resize_and_convert_to_cog(asset, target_resolution)
     else:
-        return asset.get_absolute_href()    
+        return asset.get_absolute_href()
+
 
 def stack_separated_bands(window, srcs, common_assets):
     """Stack bands from separate assets into a single array for the given window."""
@@ -251,19 +306,44 @@ def generate_asset_overview(asset_in_key, target_dir):
     )
 
 
-def to_stac(geotiff_path, item):
-    """Convert a GeoTIFF file to a STAC Item."""
-    asset_key, asset = generate_asset_overview(
-        asset_in_key="flood-delineation", target_dir=geotiff_path
+def to_stac(geotiff_path: str, item: Item) -> Item:
+    asset_key = "flood-delineation"
+
+    asset = Asset(
+        href=geotiff_path,
+        media_type=MediaType.COG,
+        roles=["data", "visual"],
     )
+
     result_item = create_stac_item(
         id=f"{item.id}-flood-delineation",
         source=geotiff_path,
         assets={asset_key: asset},
         with_proj=True,
-        with_raster=False,
+        with_raster=True,
         properties={},
     )
+
+    # Create empty Render object
+    render = Render({})
+
+    # Apply properties to it
+    render.apply(
+        assets=[asset_key],
+        title="Flood delineation",
+        colormap={
+            "0": [0, 0, 0, 255],
+            "1": [0, 128, 0, 255],
+            "2": [0, 0, 255, 255],
+            "3": [255, 255, 255, 255],
+            "5": [255, 0, 0, 255],
+        },
+        nodata="0",
+    )
+
+    # Attach to item
+    render_ext = RenderExtension.ext(result_item, add_if_missing=True)
+    render_ext.apply({"default": render})
 
     return result_item
 
@@ -285,7 +365,6 @@ def save_prediction(data, output_href, meta):
         }
     )
     with rasterio.open(output_href, "w", **meta) as dst:
-
         dst.write(data, indexes=1)
         dst.write_colormap(
             1,
@@ -297,42 +376,7 @@ def save_prediction(data, output_href, meta):
                 5: (255, 0, 0),
             },
         )
-        cmap = dst.colormap(1)
-        dst.build_overviews([2, 4, 8, 16], Resampling.nearest)
-        dst.update_tags(ns="rio_overview", resampling="nearest")
-
-
-def save_overview(data, output_href, meta):
-    """
-    Save the overview of a raster file to a GeoTIFF file.
-    """
-    meta.update(
-        {
-            "driver": "COG",
-            "dtype": "uint8",
-            "blockxsize": 256,
-            "blockysize": 256,
-            "count": 1,
-            "tiled": True,
-            "compress": "deflate",
-            "interleave": "band",
-        }
-    )
-    with rasterio.open(output_href, "w", **meta) as dst:
-
-        dst.write(data, indexes=1)
-        dst.write_colormap(
-            1,
-            {
-                0: (0, 0, 0, 255),
-                1: (0, 128, 0, 255),
-                2: (0, 0, 255, 255),
-                3: (255, 255, 255, 255),
-                5: (255, 0, 0, 255),
-            },
-        )
-        cmap = dst.colormap(1)
-
+        _ = dst.colormap(1)
         dst.build_overviews([2, 4, 8, 16], Resampling.nearest)
         dst.update_tags(ns="rio_overview", resampling="nearest")
 
@@ -360,11 +404,11 @@ def model_configuration(
     )
 
 
-def create_stac_catalog(item: pystac.Item, result_prefix: str):
-    """Create a STAC Catalog for the flood delineation result."""
-    logger.info(f"Creating STAC Item for the flood delineation result")
+def create_stac_catalog(item: Item, result_prefix: str):
+    logger.info("Creating STAC Item for the flood delineation result")
     out_item = to_stac(f"{result_prefix}.tif", item)
-    logger.info(f"Creating a STAC Catalog for the flood delineation result")
+
+    logger.info("Creating a STAC Catalog for the flood delineation result")
     cat = pystac.Catalog(
         id="catalog",
         description="flood delineation result",
@@ -372,15 +416,13 @@ def create_stac_catalog(item: pystac.Item, result_prefix: str):
     )
     cat.add_items([out_item])
     cat.normalize_and_save(
-        root_href=f"./{out_item.id}", catalog_type=pystac.CatalogType.SELF_CONTAINED
+        root_href=f"./{out_item.id}",
+        catalog_type=pystac.CatalogType.SELF_CONTAINED,
     )
+
     move(
         f"{result_prefix}.tif",
         os.path.join(out_item.id, out_item.id, f"{result_prefix}.tif"),
-    )
-    move(
-        f"{result_prefix}-overview.tif",
-        os.path.join(out_item.id, out_item.id, f"{result_prefix}-overview.tif"),
     )
 
 
