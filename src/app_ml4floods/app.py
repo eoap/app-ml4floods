@@ -164,9 +164,11 @@ def main(input_item, water_threshold, brightness_threshold):
                     f"Prediction progress: {i}/{total_windows} "
                     f"({percent:.1f}%)"
                 )
-                break
+                
      
             dst.write(prediction_block_np, 1, window=window)
+            if i == 10:
+                break
         logger.info("Finished prediction loop")
 
         logger.info("Building overviews")
@@ -195,9 +197,9 @@ def main(input_item, water_threshold, brightness_threshold):
     final_output_dir = os.getcwd()
     dest_path = os.path.join(final_output_dir) #, os.path.basename(catalog_dir))
 
-    if os.path.exists(dest_path):
-        logger.warning(f"Overwriting existing output: {dest_path}")
-        shutil.rmtree(dest_path)
+    # if os.path.exists(dest_path):
+    #     logger.warning(f"Overwriting existing output: {dest_path}")
+    #     shutil.rmtree(dest_path)
 
     shutil.move(catalog_dir, dest_path)
 

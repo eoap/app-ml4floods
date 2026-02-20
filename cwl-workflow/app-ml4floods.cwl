@@ -44,7 +44,7 @@ s:softwareRequirements:
 
 # Current version of the software
 
-s:softwareVersion: 0.3.3
+s:softwareVersion: 0.3.4
 
 
 s:softwareHelp:
@@ -196,7 +196,7 @@ $graph:
       coresMax: 4
       ramMax: 16000
     DockerRequirement:
-      dockerPull:  ghcr.io/eoap/app-ml4floods:0.3.2 # docker.io/library/ml4floods-cli:latest
+      dockerPull:   docker.io/library/ml4floods-cli:latest #ghcr.io/eoap/app-ml4floods:0.3.2 #
   #: ghcr.io/eoap/app-ml4floods:0.3.1 #  docker.io/library/ml4floods-cli:latest
   # hints:
   #   cwltool:CUDARequirement:
