@@ -154,8 +154,7 @@ def main(input_item, water_threshold, brightness_threshold):
                 )
 
             dst.write(prediction_block_np, 1, window=window)
-            if i == 10:
-                break
+ 
         logger.info("Finished prediction loop")
 
         logger.info("Building overviews")
