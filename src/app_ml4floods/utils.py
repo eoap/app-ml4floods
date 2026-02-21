@@ -449,39 +449,25 @@ def create_stac_catalog(
     item: pystac.Item,
     geotiff_path: str,
     output_root: str,
-) -> str:
+) -> None:
     """
-    Create a self-contained STAC catalog for the flood delineation result.
+    Create STAC catalog in output_root with layout:
 
-    Parameters
-    ----------
-    item : pystac.Item
-        Original source item.
-    geotiff_path : str
-        Absolute path to the generated flood-delineation COG.
-    output_root : str
-        Directory where the catalog should be written (e.g. /tmp/ml4flood).
-
-    Returns
-    -------
-    str
-        Path to the created catalog directory.
+    output_root/
+        catalog.json
+        <item-id>/
+            <item-id>.json
+            flood-delineation.tif
     """
 
     output_root = Path(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Creating STAC Item for the flood delineation result")
-
     # Create derived STAC item
     result_item = to_stac(geotiff_path, item)
-
     catalog_id = result_item.id
-    catalog_dir = output_root / catalog_id
-    catalog_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Creating STAC Catalog for the flood delineation result")
-
+    # Create catalog
     catalog = pystac.Catalog(
         id="catalog",
         description="Flood delineation result",
@@ -490,32 +476,22 @@ def create_stac_catalog(
 
     catalog.add_item(result_item)
 
-    # Save as self-contained inside catalog_dir
+    # Normalize directly into final directory
     catalog.normalize_and_save(
-        root_href=str(catalog_dir),
+        root_href=str(output_root),
         catalog_type=pystac.CatalogType.SELF_CONTAINED,
     )
 
-    # Move the COG into the item directory
-    # After normalize_and_save, structure is:
-    # catalog_dir/
-    #   catalog.json
-    #   <item-id>/
-    #       <item-id>.json
-    #
-    # We want:
-    # catalog_dir/
-    #   catalog.json
-    #   <item-id>/
-    #       <item-id>.json
-    #       flood-delineation.tif
+    # Move TIFF into item directory
+    item_dir = output_root / catalog_id
+    item_dir.mkdir(exist_ok=True)
 
-    item_dir = catalog_dir / catalog_id
-    target_tif_path = item_dir / Path(geotiff_path).name
+    target_tif = item_dir / Path(geotiff_path).name
+    import shutil
 
-    Path(geotiff_path).rename(target_tif_path)
+    shutil.move(str(geotiff_path), str(target_tif))
 
-    return str(catalog_dir)
+    logger.info(f"STAC written to {output_root}")
 
 
 def get_target_resolution(item: pystac.Item) -> int:
@@ -548,5 +524,6 @@ def get_mission(item: pystac.Item) -> str:
 def clean_up(temp_files: List[str]) -> None:
     """Remove temporary files."""
     for href in temp_files:
+        logger.info(f"Removing temporary file: {href}")
         if URL(href).scheme not in ["http", "https"]:
             os.remove(href)

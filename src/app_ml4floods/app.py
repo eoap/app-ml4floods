@@ -1,4 +1,3 @@
-import sys
 from loguru import logger
 import rasterio
 import click
@@ -12,8 +11,6 @@ from app_ml4floods.utils import (
     predict,
     clean_up,
 )
-from tqdm import tqdm
-import shutil
 
 
 # Run:
@@ -49,7 +46,6 @@ import shutil
 def main(input_item, water_threshold, brightness_threshold):
 
     import os
-    import shutil
     from rasterio.enums import Resampling
 
     WORKDIR = "/tmp/ml4flood"
@@ -119,7 +115,6 @@ def main(input_item, water_threshold, brightness_threshold):
     logger.info(f"Writing output to {tmp_output}")
 
     with rasterio.open(tmp_output, "w", **meta) as dst:
-
         dst.write_colormap(
             1,
             {
@@ -137,11 +132,9 @@ def main(input_item, water_threshold, brightness_threshold):
         logger.info(f"Total number of blocks to process: {total_windows}")
         logger.info("Starting prediction loop")
 
-
         log_every = max(1, total_windows // 20)  # 5% increments
 
         for i, (_, window) in enumerate(windows):
-
             arr_block = stack_separated_bands(window, srcs, common_assets)
 
             prediction_block, _ = predict(
@@ -151,21 +144,15 @@ def main(input_item, water_threshold, brightness_threshold):
             )
 
             prediction_block_np = (
-                prediction_block
-                .detach()
-                .cpu()
-                .numpy()
-                .astype("uint8")
+                prediction_block.detach().cpu().numpy().astype("uint8")
             )
 
             if i % log_every == 0:
                 percent = 100 * i / total_windows
                 logger.info(
-                    f"Prediction progress: {i}/{total_windows} "
-                    f"({percent:.1f}%)"
+                    f"Prediction progress: {i}/{total_windows} ({percent:.1f}%)"
                 )
-                
-     
+
             dst.write(prediction_block_np, 1, window=window)
             if i == 10:
                 break
@@ -181,35 +168,27 @@ def main(input_item, water_threshold, brightness_threshold):
         src.close()
 
     # --------------------------------------------------
-    # Create STAC catalog inside WORKDIR
+    # Create STAC catalog directly in final output dir
     # --------------------------------------------------
+
     logger.info("Creating STAC catalog for output")
-    catalog_dir = create_stac_catalog(
+
+    final_output_dir = os.getcwd()
+
+    create_stac_catalog(
         item=item,
         geotiff_path=tmp_output,
-        output_root=WORKDIR,
+        output_root=final_output_dir,
     )
-
-    # --------------------------------------------------
-    # Move catalog to mounted volume
-    # --------------------------------------------------
-    logger.info("Moving output catalog to final destination")
-    final_output_dir = os.getcwd()
-    dest_path = os.path.join(final_output_dir) #, os.path.basename(catalog_dir))
-
-    # if os.path.exists(dest_path):
-    #     logger.warning(f"Overwriting existing output: {dest_path}")
-    #     shutil.rmtree(dest_path)
-
-    shutil.move(catalog_dir, dest_path)
 
     # --------------------------------------------------
     # Cleanup temporary local assets
     # --------------------------------------------------
+
     clean_up(local_hrefs)
 
     logger.info("Done!")
 
-    
+
 if __name__ == "__main__":
     main()
