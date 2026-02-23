@@ -1,73 +1,49 @@
+# pipeline.py
+
+import os
 from loguru import logger
 import rasterio
-import click
-from app_ml4floods.utils import (
-    read_stac_item,
-    update_item_assets,
-    stack_separated_bands,
-    create_stac_catalog,
-    item_filter_assets,
-    model_configuration,
-    predict,
-    clean_up,
-)
+from rasterio.enums import Resampling
+from .io.stac import read_stac_item, create_stac_catalog, item_filter_assets
+from .io.assets import update_item_assets
+from .inference.model import model_configuration, predict
+from .inference.processing import stack_separated_bands
+from .utils.misc import clean_up
+
+base_tmp = os.environ.get("TMPDIR", "/tmp")
+WORKDIR = os.path.join(base_tmp, "ml4flood")
 
 
-# Run:
-# ml4flood --input-item https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_10SFG_20230618_0_L2A
-# ml4flood --input-item https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_10SFH_20230613_0_L2A
-@click.command(
-    short_help="ML4Floods inference for flood extent estimation",
-    help="ML4Floods inference for flood extent estimation using pre-trained model on Sentinel-2 or Landsat-9 data",
-)
-@click.option(
-    "--input-item",
-    "input_item",
-    help="STAC Item URL or staged STAC catalog",
-    required=True,
-    type=click.Path(),
-)
-@click.option(
-    "--water-threshold",
-    "water_threshold",
-    help="Water threshold (default: 0.7)",
-    required=True,
-    default=0.7,
-    type=float,
-)
-@click.option(
-    "--brightness-threshold",
-    "brightness_threshold",
-    help="Brightness threshold (default: 3500)",
-    required=True,
-    default=3500,
-    type=float,
-)
-def main(input_item, water_threshold, brightness_threshold):
+def run_pipeline(input_item: str, water_threshold: float, brightness_threshold: float):
 
-    import os
-    from rasterio.enums import Resampling
-
-    WORKDIR = "/tmp/ml4flood"
     os.makedirs(WORKDIR, exist_ok=True)
 
-    # --------------------------------------------------
-    # Read and filter item
-    # --------------------------------------------------
+    # -----------------------------------------
+    # Read STAC
+    # -----------------------------------------
     item = read_stac_item(input_item)
     item, common_assets = item_filter_assets(item)
 
-    logger.info(f"Read {item.id}, Available common bands: {common_assets}")
+    logger.info(f"Read {item.id}")
 
-    # --------------------------------------------------
-    # Model configuration
-    # --------------------------------------------------
+    # -----------------------------------------
+    # Model
+    # -----------------------------------------
     inference_function, config = model_configuration(
         num_of_available_bands=len(common_assets),
         th_water=water_threshold,
         th_brightness=brightness_threshold,
     )
 
+    # -----------------------------------------
+    # Assets preparation
+    # -----------------------------------------
+    local_hrefs = update_item_assets(item)
+
+    # -----------------------------------------
+    # Streaming prediction
+    # -----------------------------------------
+    # (COG writing block stays here)
     if len(common_assets) > 4:
         channels = [1, 2, 3, 7, 11, 12]
     else:
@@ -154,7 +130,7 @@ def main(input_item, water_threshold, brightness_threshold):
                 )
 
             dst.write(prediction_block_np, 1, window=window)
- 
+
         logger.info("Finished prediction loop")
 
         logger.info("Building overviews")
@@ -172,22 +148,17 @@ def main(input_item, water_threshold, brightness_threshold):
 
     logger.info("Creating STAC catalog for output")
 
-    final_output_dir = os.getcwd()
+    # final_output_dir = os.getcwd()
+    # -----------------------------------------
+    # STAC generation
+    # -----------------------------------------
 
     create_stac_catalog(
         item=item,
         geotiff_path=tmp_output,
-        output_root=final_output_dir,
+        output_root=os.getcwd(),
     )
-
-    # --------------------------------------------------
-    # Cleanup temporary local assets
-    # --------------------------------------------------
 
     clean_up(local_hrefs)
 
     logger.info("Done!")
-
-
-if __name__ == "__main__":
-    main()

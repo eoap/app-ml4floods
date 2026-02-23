@@ -46,7 +46,7 @@ Source = "https://github.com/eoap/app-ml4floods"
 path = "/app/envs/app-ml4floods"
 
 [project.scripts]
-ml4floods-cli = "app_ml4floods.app:main"
+ml4floods-cli = "app_ml4floods.cli:main"
 
 [tool.hatch.version]
 path = "src/app_ml4floods/__about__.py"

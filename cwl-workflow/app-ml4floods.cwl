@@ -190,10 +190,14 @@ $graph:
         MKL_NUM_THREADS: "2"
         OPENBLAS_NUM_THREADS: "2"
         GDAL_NUM_THREADS: "2"
+        CPL_TMPDIR: /tmp
+        GDAL_CACHEMAX: "1024"
     NetworkAccess:
       networkAccess: true
     ResourceRequirement:
+      coresMin: 2
       coresMax: 4
+      ramMin: 8000
       ramMax: 16000
     DockerRequirement:
       dockerPull: docker.io/library/ml4floods-cli:latest #ghcr.io/eoap/app-ml4floods:0.3.4
