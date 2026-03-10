@@ -15,6 +15,7 @@ jobs:
       registry: ghcr.io
       cwl-workflow-dir: cwl-workflow
       cwl-tool-dir: command-line-tools
+      entrypoint: ml4floods
     secrets:
       registry-user: ${{ github.actor }}
       registry-password: ${{ secrets.GITHUB_TOKEN }}
