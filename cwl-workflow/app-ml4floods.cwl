@@ -128,12 +128,15 @@ $graph:
   requirements:
     - class: InlineJavascriptRequirement
     - class: ScatterFeatureRequirement
+    - class: SchemaDefRequirement
+      types:
+      - $import: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml
       
   inputs:
-    input-item: 
+    product_uri: 
       label: Optical satellite acquisition
       doc: Sentinel-2 or Landsat-9 acquisition to be processed
-      type: string
+      type: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI
     water-threshold:
       label: Water threshold
       doc: Threshold for water detection (default 0.7)
@@ -153,7 +156,7 @@ $graph:
     inference:
       run: "#ml4floods-cli"
       in:
-        input_item: input-item
+        product_uri: product_uri
         water_threshold: water-threshold
         brightness_threshold: brightness-threshold
       out: 
@@ -164,10 +167,11 @@ $graph:
           
   baseCommand: ["ml4floods-cli"]
   inputs:
-    input_item:
-      type: string
+    product_uri:
+      type: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI
       inputBinding:
-        prefix: --input-item 
+        prefix: --product-uri
+        valueFrom: $(self.value)
     water_threshold:
       type: float?
       inputBinding:
@@ -182,8 +186,11 @@ $graph:
         glob: .
       type: Directory
   requirements:
-    InlineJavascriptRequirement: {}
-    EnvVarRequirement:
+    - class: SchemaDefRequirement
+      types:
+      - $import: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml
+    - class: InlineJavascriptRequirement
+    - class: EnvVarRequirement
       envDef:
         MPLCONFIGDIR: /tmp/matplotlib
         OMP_NUM_THREADS: "2"
@@ -192,19 +199,13 @@ $graph:
         GDAL_NUM_THREADS: "2"
         CPL_TMPDIR: /tmp
         GDAL_CACHEMAX: "1024"
-    NetworkAccess:
+    - class: NetworkAccess
       networkAccess: true
-    ResourceRequirement:
+    - class: ResourceRequirement
       coresMin: 2
       coresMax: 4
       ramMin: 8000
       ramMax: 16000
-    DockerRequirement:
-      dockerPull: docker.io/library/ml4floods-cli:latest #ghcr.io/eoap/app-ml4floods:0.3.4
-  #: ghcr.io/eoap/app-ml4floods:0.3.1 #  docker.io/library/ml4floods-cli:latest
-  # hints:
-  #   cwltool:CUDARequirement:
-  #     cudaVersionMin: "13.0"
-  #     cudaComputeCapability: "3.0"
-  #     cudaDeviceCountMin: 1
-  #     cudaDeviceCountMax: 1
+    - class: DockerRequirement
+      dockerPull: docker.io/library/ml4floods-cli:latest 
+
