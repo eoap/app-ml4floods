@@ -2,10 +2,30 @@ version: '3'
 
 tasks:
 
+  validate:
+    desc: 'Validate the CWL workflow'
+    cmds:
+      - defer: rm -f process.json codemeta.json
+      - |
+        cwltool --validate cwl-workflow/app-ml4floods.cwl && \
+        uv run --with transpiler-mate transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl && \
+        uv run --with cwl2ogc cwl2ogc --workflow-id ml4floods cwl-workflow/app-ml4floods.cwl
+    silent: false
+
+  metadata: 
+    desc: 'Show CWL workflow metadata'
+    cmds:
+      - defer: rm -f codemeta.json
+      - |
+        uv run --with transpiler-mate transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
+        cat codemeta.json
+    silent: true 
+
   build:
     desc: 'Build the container'
     cmds:
       - |
+        cd command-line-tools/ml4floods-cli
         docker build -t ml4floods-cli:latest .
     silent: false
 
@@ -14,20 +34,27 @@ tasks:
     cmds:
       - |
         hatch run ml4floods-cli \
-          --input-item https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241031T105109_R051_T31SBD_20241031T133016 \
+          --product-uri "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241031T105109_R051_T31SBD_20241031T133016" \
           --water-threshold 0.7 \
           --brightness-threshold 3500
     silent: false
 
   run-cwl:
     desc: 'Run the ml4floods CWL workflow'
+    vars:
+      PARAMS_FILE:
+        sh: mktemp
     cmds:
+      - defer: rm -f "{{.PARAMS_FILE}}"
       - task: build
       - |
-        cwltool cwl-workflow/app-ml4floods.cwl#ml4floods \
-          --input-item https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20240602T132239_R038_T22JDM_20240602T151846 \
-          --water-threshold 0.7 \
-          --brightness-threshold 3500
+        printf '%s\n' \
+          'product_uri:' \
+          '  value: "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20240602T132239_R038_T22JDM_20240602T151846"' \
+          'water-threshold: 0.7' \
+          'brightness-threshold: 3500' \
+          > "{{.PARAMS_FILE}}"
+        cwltool cwl-workflow/app-ml4floods.cwl#ml4floods "{{.PARAMS_FILE}}"
 
     silent: false
 
@@ -35,3 +62,32 @@ tasks:
 
     # https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20240602T132239_R038_T22JDM_20240602T151846
     
+  test:
+    desc: Run tests
+    cmds:
+    - |
+      cd command-line-tools/ml4floods-cli
+      hatch run test:test-show-setup
+
+  check:
+    desc: Run code quality checks
+    cmds:
+    - |
+      cd command-line-tools/ml4floods-cli
+      hatch run dev:check
+
+  lint:
+    desc: Run linters
+    cmds:
+    - |
+      cd command-line-tools/ml4floods-cli
+      hatch run dev:lint
+
+  generate-docs:
+    desc: Generate documentation
+    cmds:
+    - defer: rm -f docs/ml4floods/*.puml
+    - |
+      uv run --no-cache --with "transpiler-mate>=0.30.0" transpiler-mate markdown --workflow-id ml4floods --output docs --code-repository $(git remote get-url origin) cwl-workflow/app-ml4floods.cwl
+      uv run --with cwl2puml cwl2puml --workflow-id ml4floods --output docs/ml4floods --convert-image --image-format svg cwl-workflow/app-ml4floods.cwl
+      

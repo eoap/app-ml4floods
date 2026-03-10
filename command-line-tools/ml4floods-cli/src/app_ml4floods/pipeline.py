@@ -14,14 +14,14 @@ base_tmp = os.environ.get("TMPDIR", "/tmp")
 WORKDIR = os.path.join(base_tmp, "ml4flood")
 
 
-def run_pipeline(input_item: str, water_threshold: float, brightness_threshold: float):
+def run_pipeline(product_uri: str, water_threshold: float, brightness_threshold: float):
 
     os.makedirs(WORKDIR, exist_ok=True)
 
     # -----------------------------------------
     # Read STAC
     # -----------------------------------------
-    item = read_stac_item(input_item)
+    item = read_stac_item(product_uri)
     item, common_assets = item_filter_assets(item)
 
     logger.info(f"Read {item.id}")
