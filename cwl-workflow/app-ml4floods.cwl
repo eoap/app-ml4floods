@@ -186,11 +186,11 @@ $graph:
         glob: .
       type: Directory
   requirements:
-    - class: SchemaDefRequirement
+    SchemaDefRequirement:
       types:
       - $import: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml
-    - class: InlineJavascriptRequirement
-    - class: EnvVarRequirement
+    InlineJavascriptRequirement: {}
+    EnvVarRequirement:
       envDef:
         MPLCONFIGDIR: /tmp/matplotlib
         OMP_NUM_THREADS: "2"
@@ -199,13 +199,13 @@ $graph:
         GDAL_NUM_THREADS: "2"
         CPL_TMPDIR: /tmp
         GDAL_CACHEMAX: "1024"
-    - class: NetworkAccess
+    NetworkAccess:
       networkAccess: true
-    - class: ResourceRequirement
+    ResourceRequirement:
       coresMin: 2
       coresMax: 4
       ramMin: 8000
       ramMax: 16000
-    - class: DockerRequirement
+    DockerRequirement:
       dockerPull: docker.io/library/ml4floods-cli:latest 
 

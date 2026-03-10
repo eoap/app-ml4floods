@@ -2,6 +2,25 @@ version: '3'
 
 tasks:
 
+  validate:
+    desc: 'Validate the CWL workflow'
+    cmds:
+      - defer: rm -f process.json codemeta.json
+      - |
+        cwltool --validate cwl-workflow/app-ml4floods.cwl && \
+        uv run --with transpiler-mate transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl && \
+        uv run --with cwl2ogc cwl2ogc --workflow-id ml4floods cwl-workflow/app-ml4floods.cwl
+    silent: false
+
+  metadata: 
+    desc: 'Show CWL workflow metadata'
+    cmds:
+      - defer: rm -f codemeta.json
+      - |
+        uv run --with transpiler-mate transpiler-mate codemeta cwl-workflow/app-ml4floods.cwl
+        cat codemeta.json
+    silent: true 
+
   build:
     desc: 'Build the container'
     cmds:
