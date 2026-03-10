@@ -1,0 +1,30 @@
+site_name: ML4Floods
+site_description: ML4Floods inference for flood extent estimation using pre-trained models on Sentinel-2 or Landsat-8/9 data
+site_url: https://eoap.github.io/app-ml4floods/
+repo_url: https://github.com/eoap/app-ml4floods
+repo_name: eoap/app-ml4floods
+
+docs_dir: docs
+theme:
+    logo: imgs/icon-eoap.png
+    name: readthedocs
+
+    palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - ML4Floods: ml4floods.md
+
