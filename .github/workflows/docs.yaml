@@ -36,5 +36,5 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.x
-      - run: pip install "mkdocs<2.0.0" mkdocs-material mkdocs-mermaid2-plugin mkdocs-jupyter jsonschema legacy-cgi wl-loader
+      - run: pip install "mkdocs<2.0.0" mkdocs-material mkdocs-mermaid2-plugin mkdocs-jupyter jsonschema legacy-cgi 
       - run: mkdocs gh-deploy --force
