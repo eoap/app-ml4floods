@@ -17,12 +17,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      # Only rebuild website when docs have changed
-      - 'README.md'
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - .github/**
+      - develop
+    # paths:
+    #   # Only rebuild website when docs have changed
+    #   - 'README.md'
+    #   - 'docs/**'
+    #   - 'mkdocs.yml'
+    #   - .github/**
 
 jobs:
   deploy:
