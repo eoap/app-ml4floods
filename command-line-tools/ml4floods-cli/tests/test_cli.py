@@ -48,6 +48,7 @@ class CliTests(unittest.TestCase):
             product_uri="https://example.com/item.json",
             water_threshold=0.9,
             brightness_threshold=4200.0,
+            collection_uri=None,
         )
 
     def test_cli_uses_default_threshold_values(self):
@@ -67,6 +68,29 @@ class CliTests(unittest.TestCase):
             product_uri="https://example.com/item.json",
             water_threshold=0.7,
             brightness_threshold=3500,
+            collection_uri=None,
+        )
+
+    def test_cli_forwards_collection_uri(self):
+        runner = CliRunner()
+
+        with patch("app_ml4floods.cli.run_pipeline") as run_pipeline:
+            result = runner.invoke(
+                main,
+                [
+                    "--product-uri",
+                    "https://example.com/item.json",
+                    "--collection-uri",
+                    "https://example.com/collection.json",
+                ],
+            )
+
+        self.assertEqual(result.exit_code, 0)
+        run_pipeline.assert_called_once_with(
+            product_uri="https://example.com/item.json",
+            water_threshold=0.7,
+            brightness_threshold=3500,
+            collection_uri="https://example.com/collection.json",
         )
 
     def test_cli_requires_product_uri(self):
