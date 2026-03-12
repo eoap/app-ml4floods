@@ -14,7 +14,7 @@ base_tmp = os.environ.get("TMPDIR", "/tmp")
 WORKDIR = os.path.join(base_tmp, "ml4flood")
 
 
-def run_pipeline(product_uri: str, water_threshold: float, brightness_threshold: float):
+def run_pipeline(product_uri: str, water_threshold: float, brightness_threshold: float, collection_uri: str = None):
 
     os.makedirs(WORKDIR, exist_ok=True)
 
@@ -157,6 +157,7 @@ def run_pipeline(product_uri: str, water_threshold: float, brightness_threshold:
         item=item,
         geotiff_path=tmp_output,
         output_root=os.getcwd(),
+        collection_uri=collection_uri,
     )
 
     clean_up(local_hrefs)

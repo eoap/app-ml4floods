@@ -4,7 +4,7 @@ ML4Floods is an end-to-end ML pipeline for flood extent estimation using optical
 
 > This software is licensed under the terms of the [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode) license - SPDX short identifier: [CC-BY-4.0](https://spdx.org/licenses/CC-BY-4.0)
 >
-> 2025-10-29 - 2026-03-10T11:41:30.456 Copyright [Terradue Srl](mailto:info@terradue.com) - > [https://ror.org/0069cx113](https://ror.org/0069cx113)
+> 2025-10-29 - 2026-03-12T16:19:10.759 Copyright [Terradue Srl](mailto:info@terradue.com) - > [https://ror.org/0069cx113](https://ror.org/0069cx113)
 
 ## Project Team
 
@@ -57,13 +57,20 @@ User Manual can be found on [https://eoap.github.io/app-ml4floods/](https://eoap
 
 ### CWL Class
 
-`Workflow`
+[Workflow](https://www.commonwl.org/v1.2/Workflow.html#Workflow)
+
+### Requirements
+
+* [InlineJavascriptRequirement](https://www.commonwl.org/v1.2/Workflow.html#InlineJavascriptRequirement)
+* [ScatterFeatureRequirement](https://www.commonwl.org/v1.2/Workflow.html#ScatterFeatureRequirement)
+* [SchemaDefRequirement](https://www.commonwl.org/v1.2/Workflow.html#SchemaDefRequirement)
 
 ### Inputs
 
 | Id | Type | Label | Doc |
 |----|------|-------|-----|
 | `product_uri` | `https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI` | Optical satellite acquisition | Sentinel-2 or Landsat-9 acquisition to be processed |
+| `collection_uri` | `[ https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI, null ]` | Collection URI | Collection for publishing the results |
 | `water-threshold` | `[ null, float ]` | Water threshold | Threshold for water detection (default 0.7) |
 | `brightness-threshold` | `[ null, int ]` | Brightness threshold | Threshold for brightness (default 3500) |
 
@@ -114,23 +121,23 @@ User Manual can be found on [https://eoap.github.io/app-ml4floods/](https://eoap
 
 ### CWL Class
 
-```
-CommandLineTool
-```
+[CommandLineTool](https://www.commonwl.org/v1.2/CommandLineTool.html#CommandLineTool)
 
 ### Inputs
 
 | Id | Option | Type |
 |----|------|-------|
 | `product_uri` | `--product-uri` | `https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI` |
+| `collection_uri` | `--collection_uri` | `[ null, https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI ]` |
 | `water_threshold` | `--water-threshold` | `[ null, float ]` |
 | `brightness_threshold` | `--brightness-threshold` | `[ null, int ]` |
 
 ### Execution usage example:
 
 ```
-ml4floods-cli \
+ml4floods-cli <ARGUMENT_DYNAMICALLY_SET> \
 --product-uri <PRODUCT_URI> \
+(--collection_uri <COLLECTION_URI>) \
 (--water-threshold <WATER_THRESHOLD>) \
 (--brightness-threshold <BRIGHTNESS_THRESHOLD>)
 ```

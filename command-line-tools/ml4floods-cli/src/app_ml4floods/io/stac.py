@@ -83,6 +83,7 @@ def create_stac_catalog(
     item: Item,
     geotiff_path: str,
     output_root: str,
+        collection_uri: str = None,
 ) -> None:
     """
     Create STAC catalog in output_root with layout:
@@ -99,6 +100,11 @@ def create_stac_catalog(
 
     # Create derived STAC item
     result_item: Item = to_stac(geotiff_path, item)
+
+    if collection_uri:
+        collection = read_file(collection_uri)
+        result_item.collection = collection.id
+
     catalog_id = result_item.id
 
     # Create catalog
