@@ -22,11 +22,19 @@ from .pipeline import run_pipeline
     default=3500,
     type=float,
 )
-def main(product_uri, water_threshold, brightness_threshold):
+@click.option(
+    "--collection-uri",
+    default=None,
+    type=click.STRING,
+    help="Collection for publishing the results (optional)",
+    required=False,
+)
+def main(product_uri, water_threshold, brightness_threshold, collection_uri):
     run_pipeline(
         product_uri=product_uri,
         water_threshold=water_threshold,
         brightness_threshold=brightness_threshold,
+        collection_uri=collection_uri,
     )
 
 

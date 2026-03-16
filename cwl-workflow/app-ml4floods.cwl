@@ -137,6 +137,12 @@ $graph:
       label: Optical satellite acquisition
       doc: Sentinel-2 or Landsat-9 acquisition to be processed
       type: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI
+    collection_uri:
+      label: Collection URI
+      doc: Collection for publishing the results
+      type: 
+        - https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI
+        - "null"
     water-threshold:
       label: Water threshold
       doc: Threshold for water detection (default 0.7)
@@ -157,6 +163,7 @@ $graph:
       run: "#ml4floods-cli"
       in:
         product_uri: product_uri
+        collection_uri: collection_uri
         water_threshold: water-threshold
         brightness_threshold: brightness-threshold
       out: 
@@ -166,12 +173,25 @@ $graph:
   id: ml4floods-cli
           
   baseCommand: ["ml4floods-cli"]
+  arguments: 
+  - valueFrom: |
+      ${  
+        if inputs.collection_uri.value !== null) {
+          return ["--collection-uri", inputs.collection_uri.value]; 
+        } else {
+          return [];
+        }
+      }
   inputs:
     product_uri:
       type: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI
       inputBinding:
         prefix: --product-uri
         valueFrom: $(self.value)
+    collection_uri:
+      type: 
+        - https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI?
+        - "null"
     water_threshold:
       type: float?
       inputBinding:

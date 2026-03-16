@@ -158,6 +158,7 @@ class PipelineTests(unittest.TestCase):
             item=item,
             geotiff_path="/tmp/ml4flood-test/flood-delineation.tif",
             output_root=os.getcwd(),
+            collection_uri=None,
         )
         clean_up.assert_called_once_with(["/tmp/local-asset.tif"])
 
