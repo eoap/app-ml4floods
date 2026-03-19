@@ -44,7 +44,7 @@ s:softwareRequirements:
 
 # Current version of the software
 
-s:softwareVersion: 0.3.5
+s:softwareVersion: 0.4.0
 
 
 s:softwareHelp:
