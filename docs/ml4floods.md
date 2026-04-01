@@ -4,7 +4,7 @@ ML4Floods is an end-to-end ML pipeline for flood extent estimation using optical
 
 > This software is licensed under the terms of the [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode) license - SPDX short identifier: [CC-BY-4.0](https://spdx.org/licenses/CC-BY-4.0)
 >
-> 2025-10-29 - 2026-03-12T16:19:10.759 Copyright [Terradue Srl](mailto:info@terradue.com) - > [https://ror.org/0069cx113](https://ror.org/0069cx113)
+> 2025-10-29 - 2026-04-01T15:55:56.263 Copyright [Terradue Srl](mailto:info@terradue.com) - > [https://ror.org/0069cx113](https://ror.org/0069cx113)
 
 ## Project Team
 
@@ -69,10 +69,10 @@ User Manual can be found on [https://eoap.github.io/app-ml4floods/](https://eoap
 
 | Id | Type | Label | Doc |
 |----|------|-------|-----|
-| `product_uri` | `https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI` | Optical satellite acquisition | Sentinel-2 or Landsat-9 acquisition to be processed |
-| `collection_uri` | `[ https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI, null ]` | Collection URI | Collection for publishing the results |
-| `water-threshold` | `[ null, float ]` | Water threshold | Threshold for water detection (default 0.7) |
-| `brightness-threshold` | `[ null, int ]` | Brightness threshold | Threshold for brightness (default 3500) |
+| `product_uri` | [URI](https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI):<ul><li>`value`: [string](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul> | Optical satellite acquisition | Sentinel-2 or Landsat-9 acquisition to be processed |
+| `collection_uri` | One of:<ul><li>[URI](https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI):<ul><li>`value`: [string](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul></li><li>[null](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul> | Collection URI | Collection for publishing the results |
+| `water-threshold` | One of:<ul><li>[null](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li><li>[float](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul> | Water threshold | Threshold for water detection (default 0.7) |
+| `brightness-threshold` | One of:<ul><li>[null](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li><li>[int](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul> | Brightness threshold | Threshold for brightness (default 3500) |
 
 
 ### Steps
@@ -86,34 +86,61 @@ User Manual can be found on [https://eoap.github.io/app-ml4floods/](https://eoap
 
 | Id | Type | Label | Doc |
 |----|------|-------|-----|
-| `flood-delineation` | `Directory` | None | None |
+| `flood-delineation` | [Directory](https://www.commonwl.org/v1.2/Workflow.html#Directory) | None | None |
+
+
+### OGC API - Processes
+
+When `ml4floods` [Workflow](https://www.commonwl.org/v1.2/Workflow.html#Workflow) is exposed through [OGC API - Processes - Part 1: Core](https://docs.ogc.org/is/18-062r2/18-062r2.html), `inputs` and `outputs` fields below represent the interface of the [getProcessDescription](https://developer.ogc.org/api/processes/index.html#tag/ProcessDescription/operation/getProcessDescription) API. 
+
+
+
+#### Inputs
+
+![ml4floods OGC API Processes JSON Inputs schema](./ml4floods/ogc_processes_inputs.svg "ml4floods  diagram")
+
+#### Outputs
+
+![ml4floods OGC API Processes JSON Outputs schema](./ml4floods/ogc_processes_outputs.svg "ml4floods  diagram")
 
 
 ### UML Diagrams
 
 
-#### UML `activity` diagram
+#### Activity diagram
 
-![ml4floods flow diagram](./ml4floods/activity.svg "ml4floods activity diagram")
+Learn more about the [Activity diagram](https://en.wikipedia.org/wiki/Activity_diagram) below.
 
-#### UML `component` diagram
+![ml4floods flow diagram](./ml4floods/activity.svg "ml4floods Activity diagram")
 
-![ml4floods flow diagram](./ml4floods/component.svg "ml4floods component diagram")
+#### Component diagram
 
-#### UML `class` diagram
+Learn more about the [Component diagram](https://en.wikipedia.org/wiki/Component_diagram) below.
 
-![ml4floods flow diagram](./ml4floods/class.svg "ml4floods class diagram")
+![ml4floods flow diagram](./ml4floods/component.svg "ml4floods Component diagram")
 
-#### UML `sequence` diagram
+#### Class diagram
 
-![ml4floods flow diagram](./ml4floods/sequence.svg "ml4floods sequence diagram")
+Learn more about the [Class diagram](https://en.wikipedia.org/wiki/Class_diagram) below.
 
-#### UML `state` diagram
+![ml4floods flow diagram](./ml4floods/class.svg "ml4floods Class diagram")
 
-![ml4floods flow diagram](./ml4floods/state.svg "ml4floods state diagram")
+#### Sequence diagram
+
+Learn more about the [Sequence diagram](https://en.wikipedia.org/wiki/Sequence_diagram) below.
+
+![ml4floods flow diagram](./ml4floods/sequence.svg "ml4floods Sequence diagram")
+
+#### State diagram
+
+Learn more about the [State diagram](https://en.wikipedia.org/wiki/State_diagram) below.
+
+![ml4floods flow diagram](./ml4floods/state.svg "ml4floods State diagram")
 
 
+### Run in step
 
+`inference`
 
 
 
@@ -127,10 +154,10 @@ User Manual can be found on [https://eoap.github.io/app-ml4floods/](https://eoap
 
 | Id | Option | Type |
 |----|------|-------|
-| `product_uri` | `--product-uri` | `https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI` |
-| `collection_uri` | `--collection_uri` | `[ null, https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI ]` |
-| `water_threshold` | `--water-threshold` | `[ null, float ]` |
-| `brightness_threshold` | `--brightness-threshold` | `[ null, int ]` |
+| `product_uri` | `--product-uri` | [URI](https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI):<ul><li>`value`: [string](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul> |
+| `collection_uri` | `--collection_uri` | One of:<ul><li>[null](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li><li>[URI](https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI):<ul><li>`value`: [string](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul></li></ul> |
+| `water_threshold` | `--water-threshold` | One of:<ul><li>[null](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li><li>[float](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul> |
+| `brightness_threshold` | `--brightness-threshold` | One of:<ul><li>[null](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li><li>[int](https://www.commonwl.org/v1.2/Workflow.html#CWLType)</li></ul> |
 
 ### Execution usage example:
 
@@ -142,7 +169,3 @@ ml4floods-cli <ARGUMENT_DYNAMICALLY_SET> \
 (--brightness-threshold <BRIGHTNESS_THRESHOLD>)
 ```
 
-
-### Run in step
-
-`inference`
