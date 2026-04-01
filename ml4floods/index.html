@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://eoap.github.io/app-ml4floods/ml4floods/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>ML4Floods - ML4Floods</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "ML4Floods";
+        var mkdocs_page_input_path = "ml4floods.md";
+        var mkdocs_page_url = "/app-ml4floods/ml4floods/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../imgs/icon-eoap.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">ML4Floods</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#project-team">Project Team</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#authors">Authors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#contributors">Contributors</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#user-manual">User Manual</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#runtime-environment">Runtime environment</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#supported-operating-systems">Supported Operating Systems</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#software-source-code">Software Source code</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ml4floods">ml4floods</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#cwl-class">CWL Class</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#requirements_1">Requirements</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#outputs">Outputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ogc-api-processes">OGC API - Processes</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#inputs_1">Inputs</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#outputs_1">Outputs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#uml-diagrams">UML Diagrams</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#activity-diagram">Activity diagram</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#component-diagram">Component diagram</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#class-diagram">Class diagram</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#sequence-diagram">Sequence diagram</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#state-diagram">State diagram</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#run-in-step">Run in step</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ml4floods-cli">ml4floods-cli</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#cwl-class_1">CWL Class</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inputs_2">Inputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#execution-usage-example">Execution usage example:</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ML4Floods</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">ML4Floods</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/eoap/app-ml4floods/edit/master/docs/ml4floods.md">Edit on eoap/app-ml4floods</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ml4floods-inference-for-flood-extent-estimation-using-pre-trained-model-on-sentinel-2-or-landsat-9-data-v035">ML4Floods inference for flood extent estimation using pre-trained model on Sentinel-2 or Landsat-9 data v0.3.5</h1>
+<p>ML4Floods is an end-to-end ML pipeline for flood extent estimation using optical satellite data from Sentinel-2 or Landsat-8/9 acquisition</p>
+<blockquote>
+<p>This software is licensed under the terms of the <a href="https://creativecommons.org/licenses/by/4.0/legalcode">Creative Commons Attribution 4.0 International</a> license - SPDX short identifier: <a href="https://spdx.org/licenses/CC-BY-4.0">CC-BY-4.0</a></p>
+<p>2025-10-29 - 2026-04-01T15:55:56.263 Copyright <a href="mailto:info@terradue.com">Terradue Srl</a> - &gt; <a href="https://ror.org/0069cx113">https://ror.org/0069cx113</a></p>
+</blockquote>
+<h2 id="project-team">Project Team</h2>
+<h3 id="authors">Authors</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Organization</th>
+<th>Role</th>
+<th>Identifier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brito, Fabrice</td>
+<td><a href="mailto:fabrice.brito@terradue.com">fabrice.brito@terradue.com</a></td>
+<td><a href="https://ror.org/0069cx113">Terradue</a></td>
+<td><a href="http://purl.org/spar/datacite/ProjectManager">Project Manager</a></td>
+<td><a href="https://orcid.org/0009-0000-1342-9736">https://orcid.org/0009-0000-1342-9736</a></td>
+</tr>
+<tr>
+<td>Re, Alice</td>
+<td><a href="mailto:alice.re@terradue.com">alice.re@terradue.com</a></td>
+<td><a href="https://ror.org/0069cx113">Terradue</a></td>
+<td><a href="http://purl.org/spar/datacite/Researcher">Researcher</a></td>
+<td><a href="https://orcid.org/0000-0001-7068-5533">https://orcid.org/0000-0001-7068-5533</a></td>
+</tr>
+<tr>
+<td>Tripodi, Simone</td>
+<td><a href="mailto:simone.tripodi@terradue.com">simone.tripodi@terradue.com</a></td>
+<td><a href="https://ror.org/0069cx113">Terradue</a></td>
+<td><a href="http://purl.org/spar/datacite/ProjectLeader">Project Leader</a></td>
+<td><a href="https://orcid.org/0009-0006-2063-618X">https://orcid.org/0009-0006-2063-618X</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="contributors">Contributors</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Organization</th>
+<th>Role</th>
+<th>Identifier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vaccari, Simone</td>
+<td><a href="mailto:simone.vaccari@terradue.com">simone.vaccari@terradue.com</a></td>
+<td><a href="https://ror.org/0069cx113">Terradue</a></td>
+<td><a href="http://purl.org/spar/datacite/Researcher">Researcher</a></td>
+<td><a href="https://orcid.org/0000-0002-2757-4165">https://orcid.org/0000-0002-2757-4165</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="user-manual">User Manual</h2>
+<p>User Manual can be found on <a href="https://eoap.github.io/app-ml4floods/">https://eoap.github.io/app-ml4floods/</a>.</p>
+<h2 id="runtime-environment">Runtime environment</h2>
+<h3 id="supported-operating-systems">Supported Operating Systems</h3>
+<ul>
+<li>Linux</li>
+<li>MacOS X</li>
+</ul>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li><a href="https://cwltool.readthedocs.io/en/latest/">https://cwltool.readthedocs.io/en/latest/</a></li>
+<li><a href="https://www.python.org/">https://www.python.org/</a></li>
+</ul>
+<h2 id="software-source-code">Software Source code</h2>
+<ul>
+<li>Browsable version of the <a href="https://github.com/eoap/app-ml4floods.git">source repository</a>;</li>
+<li><a href="https://github.com/eoap/app-ml4floods/actions">Continuous integration</a> system used by the project;</li>
+<li>Issues, bugs, and feature requests should be submitted to the following <a href="https://github.com/eoap/app-ml4floods/issues">issue management</a> system for this project</li>
+</ul>
+<hr />
+<h2 id="ml4floods">ml4floods</h2>
+<h3 id="cwl-class">CWL Class</h3>
+<p><a href="https://www.commonwl.org/v1.2/Workflow.html#Workflow">Workflow</a></p>
+<h3 id="requirements_1">Requirements</h3>
+<ul>
+<li><a href="https://www.commonwl.org/v1.2/Workflow.html#InlineJavascriptRequirement">InlineJavascriptRequirement</a></li>
+<li><a href="https://www.commonwl.org/v1.2/Workflow.html#ScatterFeatureRequirement">ScatterFeatureRequirement</a></li>
+<li><a href="https://www.commonwl.org/v1.2/Workflow.html#SchemaDefRequirement">SchemaDefRequirement</a></li>
+</ul>
+<h3 id="inputs">Inputs</h3>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Type</th>
+<th>Label</th>
+<th>Doc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>product_uri</code></td>
+<td><a href="https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI">URI</a>:<ul><li><code>value</code>: <a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">string</a></li></ul></td>
+<td>Optical satellite acquisition</td>
+<td>Sentinel-2 or Landsat-9 acquisition to be processed</td>
+</tr>
+<tr>
+<td><code>collection_uri</code></td>
+<td>One of:<ul><li><a href="https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI">URI</a>:<ul><li><code>value</code>: <a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">string</a></li></ul></li><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">null</a></li></ul></td>
+<td>Collection URI</td>
+<td>Collection for publishing the results</td>
+</tr>
+<tr>
+<td><code>water-threshold</code></td>
+<td>One of:<ul><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">null</a></li><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">float</a></li></ul></td>
+<td>Water threshold</td>
+<td>Threshold for water detection (default 0.7)</td>
+</tr>
+<tr>
+<td><code>brightness-threshold</code></td>
+<td>One of:<ul><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">null</a></li><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">int</a></li></ul></td>
+<td>Brightness threshold</td>
+<td>Threshold for brightness (default 3500)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="steps">Steps</h3>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Runs</th>
+<th>Label</th>
+<th>Doc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#ml4floods-cli">inference</a></td>
+<td><code>#ml4floods-cli</code></td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h3 id="outputs">Outputs</h3>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Type</th>
+<th>Label</th>
+<th>Doc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flood-delineation</code></td>
+<td><a href="https://www.commonwl.org/v1.2/Workflow.html#Directory">Directory</a></td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ogc-api-processes">OGC API - Processes</h3>
+<p>When <code>ml4floods</code> <a href="https://www.commonwl.org/v1.2/Workflow.html#Workflow">Workflow</a> is exposed through <a href="https://docs.ogc.org/is/18-062r2/18-062r2.html">OGC API - Processes - Part 1: Core</a>, <code>inputs</code> and <code>outputs</code> fields below represent the interface of the <a href="https://developer.ogc.org/api/processes/index.html#tag/ProcessDescription/operation/getProcessDescription">getProcessDescription</a> API. </p>
+<h4 id="inputs_1">Inputs</h4>
+<p><img alt="ml4floods OGC API Processes JSON Inputs schema" src="ogc_processes_inputs.svg" title="ml4floods  diagram" /></p>
+<h4 id="outputs_1">Outputs</h4>
+<p><img alt="ml4floods OGC API Processes JSON Outputs schema" src="ogc_processes_outputs.svg" title="ml4floods  diagram" /></p>
+<h3 id="uml-diagrams">UML Diagrams</h3>
+<h4 id="activity-diagram">Activity diagram</h4>
+<p>Learn more about the <a href="https://en.wikipedia.org/wiki/Activity_diagram">Activity diagram</a> below.</p>
+<p><img alt="ml4floods flow diagram" src="activity.svg" title="ml4floods Activity diagram" /></p>
+<h4 id="component-diagram">Component diagram</h4>
+<p>Learn more about the <a href="https://en.wikipedia.org/wiki/Component_diagram">Component diagram</a> below.</p>
+<p><img alt="ml4floods flow diagram" src="component.svg" title="ml4floods Component diagram" /></p>
+<h4 id="class-diagram">Class diagram</h4>
+<p>Learn more about the <a href="https://en.wikipedia.org/wiki/Class_diagram">Class diagram</a> below.</p>
+<p><img alt="ml4floods flow diagram" src="class.svg" title="ml4floods Class diagram" /></p>
+<h4 id="sequence-diagram">Sequence diagram</h4>
+<p>Learn more about the <a href="https://en.wikipedia.org/wiki/Sequence_diagram">Sequence diagram</a> below.</p>
+<p><img alt="ml4floods flow diagram" src="sequence.svg" title="ml4floods Sequence diagram" /></p>
+<h4 id="state-diagram">State diagram</h4>
+<p>Learn more about the <a href="https://en.wikipedia.org/wiki/State_diagram">State diagram</a> below.</p>
+<p><img alt="ml4floods flow diagram" src="state.svg" title="ml4floods State diagram" /></p>
+<h3 id="run-in-step">Run in step</h3>
+<p><code>inference</code></p>
+<h2 id="ml4floods-cli">ml4floods-cli</h2>
+<h3 id="cwl-class_1">CWL Class</h3>
+<p><a href="https://www.commonwl.org/v1.2/CommandLineTool.html#CommandLineTool">CommandLineTool</a></p>
+<h3 id="inputs_2">Inputs</h3>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Option</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>product_uri</code></td>
+<td><code>--product-uri</code></td>
+<td><a href="https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI">URI</a>:<ul><li><code>value</code>: <a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">string</a></li></ul></td>
+</tr>
+<tr>
+<td><code>collection_uri</code></td>
+<td><code>--collection_uri</code></td>
+<td>One of:<ul><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">null</a></li><li><a href="https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI">URI</a>:<ul><li><code>value</code>: <a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">string</a></li></ul></li></ul></td>
+</tr>
+<tr>
+<td><code>water_threshold</code></td>
+<td><code>--water-threshold</code></td>
+<td>One of:<ul><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">null</a></li><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">float</a></li></ul></td>
+</tr>
+<tr>
+<td><code>brightness_threshold</code></td>
+<td><code>--brightness-threshold</code></td>
+<td>One of:<ul><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">null</a></li><li><a href="https://www.commonwl.org/v1.2/Workflow.html#CWLType">int</a></li></ul></td>
+</tr>
+</tbody>
+</table>
+<h3 id="execution-usage-example">Execution usage example:</h3>
+<pre><code>ml4floods-cli &lt;ARGUMENT_DYNAMICALLY_SET&gt; \
+--product-uri &lt;PRODUCT_URI&gt; \
+(--collection_uri &lt;COLLECTION_URI&gt;) \
+(--water-threshold &lt;WATER_THRESHOLD&gt;) \
+(--brightness-threshold &lt;BRIGHTNESS_THRESHOLD&gt;)
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/eoap/app-ml4floods" class="fa fa-code-fork" style="color: #fcfcfc"> eoap/app-ml4floods</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
