@@ -88,15 +88,15 @@ tasks:
     cmds:
     - defer: rm -f docs/ml4floods/*.puml
     - |
-      uv run --no-cache --with "transpiler-mate>=0.41.0" transpiler-mate markdown --workflow-id ml4floods --output docs --code-repository $(git remote get-url origin) cwl-workflow/app-ml4floods.cwl
-      uv run --with cwl2puml cwl2puml --workflow-id ml4floods --output docs/ml4floods --convert-image --image-format svg cwl-workflow/app-ml4floods.cwl
+      uv run --no-cache --with "transpiler-mate>=0.43.0" transpiler-mate markdown --workflow-id ml4floods --output docs --code-repository $(git remote get-url origin) cwl-workflow/app-ml4floods.cwl
+      uv run --with "cwl2puml>=0.41.0" cwl2puml --workflow-id ml4floods --output docs/ml4floods --convert-image --image-format svg cwl-workflow/app-ml4floods.cwl
       
   oci-annotations: 
      desc: Generate OCI annotations
      cmds:
      - defer: rm -f annotations.json
      - |
-       uv run --with transpiler-mate \
+       uv run --with "transpiler-mate>=0.43.0" \
           transpiler-mate oci-annotations \
                 --workflow-id ml4floods \
                 --image-source $(git remote get-url origin) \

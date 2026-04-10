@@ -4,7 +4,7 @@ ML4Floods is an end-to-end ML pipeline for flood extent estimation using optical
 
 > This software is licensed under the terms of the [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode) license - SPDX short identifier: [CC-BY-4.0](https://spdx.org/licenses/CC-BY-4.0)
 >
-> 2025-10-29 - 2026-04-01T15:55:56.263 Copyright [Terradue Srl](mailto:info@terradue.com) - > [https://ror.org/0069cx113](https://ror.org/0069cx113)
+> 2025-10-29 - 2026-04-10T11:41:48.728 Copyright [Terradue Srl](mailto:info@terradue.com) - > [https://ror.org/0069cx113](https://ror.org/0069cx113)
 
 ## Project Team
 
